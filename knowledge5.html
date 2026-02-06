@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知识拓扑 — 词学研习</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200;300;400;500;600;700;900&family=Ma+Shan+Zheng&display=swap');
+        :root{--ink-black:#1a1a1a;--ink-dark:#2c2c2c;--ink-gray:#555;--ink-light:#888;--paper:#f5f0e8;--seal-red:#c23a2b}
+        *{margin:0;padding:0;box-sizing:border-box}
+        html{scroll-behavior:smooth}
+        body{font-family:'Noto Serif SC',serif;background:var(--paper);color:var(--ink-black);overflow-x:hidden}
+
+        nav{position:fixed;top:0;left:0;width:100%;z-index:9000;background:rgba(26,26,26,.95);backdrop-filter:blur(15px);box-shadow:0 2px 30px rgba(0,0,0,.3);padding:.6rem 0}
+        nav .nav-inner{max-width:1400px;margin:0 auto;padding:0 2rem;display:flex;align-items:center;justify-content:space-between}
+        nav .logo{font-family:'Ma Shan Zheng',cursive;font-size:1.6rem;color:var(--paper);text-decoration:none;display:flex;align-items:center;gap:.5rem}
+        nav .logo .seal-sm{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border:2px solid var(--seal-red);color:var(--seal-red);font-size:.9rem}
+        nav ul{display:flex;list-style:none;gap:.3rem}
+        nav ul li a{color:rgba(245,240,232,.7);text-decoration:none;font-size:.9rem;padding:.5rem 1rem;border-radius:4px;transition:.3s;position:relative}
+        nav ul li a:hover,nav ul li a.active{color:var(--paper);background:rgba(245,240,232,.08)}
+        nav ul li a.active::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:20px;height:2px;background:var(--seal-red)}
+        .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer}
+        .hamburger span{width:25px;height:2px;background:var(--paper);transition:.3s}
+
+        .page-hero{min-height:50vh;display:flex;align-items:center;justify-content:center;background:var(--ink-black);position:relative;overflow:hidden;text-align:center}
+        .page-hero::before{content:'拓';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Ma Shan Zheng',cursive;font-size:40vw;color:rgba(245,240,232,.02);pointer-events:none}
+        .page-hero-content{position:relative;z-index:1;padding:2rem}
+        .page-hero-content .label{display:inline-block;font-size:.8rem;letter-spacing:6px;color:rgba(245,240,232,.4);border:1px solid rgba(245,240,232,.15);padding:.3rem 1.2rem;margin-bottom:1.5rem}
+        .page-hero-content h1{font-family:'Ma Shan Zheng',cursive;font-size:clamp(2.5rem,6vw,5rem);color:var(--paper);margin-bottom:1rem}
+        .page-hero-content p{color:rgba(245,240,232,.5);font-size:1.1rem;max-width:600px;margin:0 auto;line-height:1.8}
+
+        .section-header{text-align:center;margin-bottom:3rem}
+        .section-header .label{display:inline-block;font-size:.8rem;letter-spacing:6px;color:var(--ink-light);border:1px solid rgba(0,0,0,.1);padding:.3rem 1.2rem;margin-bottom:1.5rem}
+        .section-header h2{font-family:'Ma Shan Zheng',cursive;font-size:clamp(2rem,4vw,3rem);margin-bottom:1rem}
+        .section-header .divider{width:60px;height:2px;background:var(--seal-red);margin:0 auto}
+
+        /* ===== 知识图谱画布 ===== */
+        .graph-section{padding:4rem 2rem}
+        .graph-hint{text-align:center;color:var(--ink-light);font-size:.85rem;margin-bottom:2rem;letter-spacing:2px}
+        #topology-canvas{
+            width:100%;max-width:1100px;margin:0 auto;
+            height:660px;position:relative;
+            background:rgba(255,255,255,.35);
+            border:1px solid rgba(0,0,0,.06);
+            border-radius:4px;overflow:hidden;
+        }
+        #topo-svg{position:absolute;top:0;left:0;width:100%;height:100%;z-index:1}
+        #topo-svg line{stroke:rgba(0,0,0,.1);stroke-width:1.5;stroke-dasharray:6 4}
+        #topo-svg line.highlight{stroke:var(--seal-red);stroke-width:2;stroke-dasharray:none;opacity:.5}
+
+        .tnode{
+            position:absolute;display:flex;flex-direction:column;align-items:center;
+            cursor:pointer;z-index:2;transition:transform .35s;
+            user-select:none;
+        }
+        .tnode:hover{transform:scale(1.15)}
+        .tnode .circle{
+            border-radius:50%;display:flex;align-items:center;justify-content:center;
+            font-family:'Ma Shan Zheng',cursive;color:#fff;
+            box-shadow:0 4px 20px rgba(0,0,0,.12);transition:.3s;
+        }
+        .tnode .lbl{margin-top:.4rem;font-size:.78rem;color:var(--ink-gray);text-align:center;white-space:nowrap}
+        .tnode.core .circle{width:110px;height:110px;font-size:1.5rem;background:linear-gradient(135deg,#1a1a1a,#3a3a3a);border:3px solid var(--seal-red);box-shadow:0 0 50px rgba(194,58,43,.3)}
+        .tnode.lit .circle{width:75px;height:75px;font-size:1rem;background:linear-gradient(135deg,#8b2500,#c23a2b)}
+        .tnode.pol .circle{width:75px;height:75px;font-size:1rem;background:linear-gradient(135deg,#2e4a3a,#3a6b50)}
+        .tnode.art .circle{width:75px;height:75px;font-size:1rem;background:linear-gradient(135deg,#5a4a30,#8a7a55)}
+        .tnode.phi .circle{width:75px;height:75px;font-size:1rem;background:linear-gradient(135deg,#2a3a5a,#4a6a9a)}
+        .tnode.life .circle{width:75px;height:75px;font-size:1rem;background:linear-gradient(135deg,#5a3050,#8a5a7a)}
+        .tnode.sub .circle{width:56px;height:56px;font-size:.8rem;opacity:.85}
+
+        /* 详情面板 */
+        #detail-panel{
+            position:fixed;top:0;right:-480px;width:440px;height:100%;
+            background:var(--ink-black);z-index:9500;
+            transition:right .45s cubic-bezier(.25,.46,.45,.94);
+            box-shadow:-10px 0 60px rgba(0,0,0,.3);
+            overflow-y:auto;padding:3rem 2rem;
+        }
+        #detail-panel.open{right:0}
+        #detail-panel .close-btn{
+            position:absolute;top:1.5rem;right:1.5rem;
+            background:none;border:1px solid rgba(245,240,232,.2);
+            color:var(--paper);width:36px;height:36px;font-size:1.2rem;
+            cursor:pointer;transition:.3s;display:flex;align-items:center;justify-content:center;
+        }
+        #detail-panel .close-btn:hover{background:rgba(245,240,232,.1)}
+        #detail-panel .panel-tag{
+            display:inline-block;font-size:.75rem;letter-spacing:3px;
+            color:rgba(194,58,43,.8);border:1px solid rgba(194,58,43,.3);
+            padding:.2rem .8rem;margin-bottom:1rem;
+        }
+        #detail-panel h3{font-family:'Ma Shan Zheng',cursive;font-size:2rem;color:var(--paper);margin-bottom:1.2rem}
+        #detail-panel p{font-size:.9rem;line-height:2;color:rgba(245,240,232,.6);margin-bottom:1rem}
+        #detail-panel .works{margin-top:1rem}
+        #detail-panel .works span{
+            display:inline-block;padding:.25rem .7rem;margin:.2rem;
+            border:1px solid rgba(245,240,232,.12);color:rgba(245,240,232,.5);
+            font-size:.8rem;
+        }
+        .overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.4);z-index:9400;opacity:0;pointer-events:none;transition:.3s}
+        .overlay.open{opacity:1;pointer-events:auto}
+
+        /* ===== 分类知识卡片 ===== */
+        .knowledge-cards{padding:6rem 2rem;background:var(--ink-black)}
+        .k-grid{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:2rem}
+        .k-card{background:rgba(245,240,232,.04);border:1px solid rgba(245,240,232,.07);padding:2.5rem 2rem;position:relative;overflow:hidden;transition:.5s}
+        .k-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:3px;background:var(--seal-red);transform:scaleX(0);transform-origin:left;transition:transform .5s}
+        .k-card:hover::before{transform:scaleX(1)}
+        .k-card:hover{background:rgba(245,240,232,.07);transform:translateY(-4px)}
+        .k-card .k-icon{font-size:2.5rem;margin-bottom:1rem}
+        .k-card h3{font-family:'Ma Shan Zheng',cursive;font-size:1.5rem;color:var(--paper);margin-bottom:.8rem}
+        .k-card p{font-size:.88rem;line-height:1.9;color:rgba(245,240,232,.55)}
+        .k-card ul{list-style:none;margin-top:1rem}
+        .k-card ul li{font-size:.85rem;color:rgba(245,240,232,.5);padding:.4rem 0;border-bottom:1px solid rgba(245,240,232,.05);display:flex;align-items:center;gap:.5rem}
+        .k-card ul li::before{content:'·';color:var(--seal-red);font-weight:bold}
+
+        footer{background:var(--ink-black);border-top:1px solid rgba(245,240,232,.08);padding:3rem 2rem;text-align:center}
+        footer p{color:rgba(245,240,232,.3);font-size:.8rem;letter-spacing:2px}
+        footer .seal-footer{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border:2px solid rgba(194,58,43,.4);color:rgba(194,58,43,.6);font-family:'Ma Shan Zheng',cursive;font-size:1.2rem;margin-bottom:1rem}
+
+        @media(max-width:768px){
+            .hamburger{display:flex}
+            nav ul{position:fixed;top:0;right:-100%;width:70%;height:100vh;background:rgba(26,26,26,.98);flex-direction:column;padding:5rem 2rem;transition:right .4s;gap:.5rem}
+            nav ul.open{right:0}
+            #topology-canvas{height:500px}
+            .tnode.core .circle{width:80px;height:80px;font-size:1.1rem}
+            .tnode.lit .circle,.tnode.pol .circle,.tnode.art .circle,.tnode.phi .circle,.tnode.life .circle{width:58px;height:58px;font-size:.85rem}
+            .tnode.sub .circle{width:44px;height:44px;font-size:.7rem}
+            #detail-panel{width:100%}
+            .k-grid{grid-template-columns:1fr}
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-inner">
+        <a href="index5.html" class="logo"><span class="seal-sm">蘇</span>词学研习</a>
+        <div class="hamburger" onclick="document.getElementById('nav-menu').classList.toggle('open')"><span></span><span></span><span></span></div>
+        <ul id="nav-menu">
+            <li><a href="index5.html">首页</a></li>
+            <li><a href="biography5.html">苏轼生平</a></li>
+            <li><a href="analysis5.html">词作解析</a></li>
+            <li><a href="knowledge5.html" class="active">知识拓扑</a></li>
+            <li><a href="quiz5.html">课后练习</a></li>
+            <li><a href="summary5.html">回顾总结</a></li>
+        </ul>
+    </div>
+</nav>
+
+<section class="page-hero">
+    <div class="page-hero-content">
+        <span class="label">知 · 识 · 拓 · 扑</span>
+        <h1>东坡知识图谱</h1>
+        <p>以苏轼为核心，辐射文学、政治、艺术、哲学、生活五大领域。<br>点击节点，探索苏轼的精神宇宙。</p>
+    </div>
+</section>
+
+<section class="graph-section">
+    <div class="section-header">
+        <span class="label">交 · 互 · 图 · 谱</span>
+        <h2>思想星图</h2>
+        <div class="divider"></div>
+    </div>
+    <p class="graph-hint">点击各节点可查看详细信息</p>
+
+    <div id="topology-canvas">
+        <svg id="topo-svg"></svg>
+        <!-- 核心节点 -->
+        <div class="tnode core" style="left:calc(50% - 55px);top:calc(50% - 55px)" onclick="showDetail('core')">
+            <div class="circle">苏轼</div>
+            <span class="lbl">东坡居士</span>
+        </div>
+        <!-- 文学 -->
+        <div class="tnode lit" id="n-lit" style="left:12%;top:18%" onclick="showDetail('lit')">
+            <div class="circle">词</div><span class="lbl">豪放词派</span>
+        </div>
+        <div class="tnode lit sub" id="n-lit2" style="left:3%;top:40%" onclick="showDetail('lit2')">
+            <div class="circle">诗</div><span class="lbl">苏诗</span>
+        </div>
+        <div class="tnode lit sub" id="n-lit3" style="left:5%;top:62%" onclick="showDetail('lit3')">
+            <div class="circle">文</div><span class="lbl">散文</span>
+        </div>
+        <!-- 政治 -->
+        <div class="tnode pol" id="n-pol" style="left:72%;top:12%" onclick="showDetail('pol')">
+            <div class="circle">政</div><span class="lbl">仕途沉浮</span>
+        </div>
+        <div class="tnode pol sub" id="n-pol2" style="left:85%;top:32%" onclick="showDetail('pol2')">
+            <div class="circle">贬</div><span class="lbl">乌台诗案</span>
+        </div>
+        <!-- 艺术 -->
+        <div class="tnode art" id="n-art" style="left:78%;top:60%" onclick="showDetail('art')">
+            <div class="circle">书</div><span class="lbl">书法</span>
+        </div>
+        <div class="tnode art sub" id="n-art2" style="left:82%;top:80%" onclick="showDetail('art2')">
+            <div class="circle">画</div><span class="lbl">文人画</span>
+        </div>
+        <!-- 哲学 -->
+        <div class="tnode phi" id="n-phi" style="left:18%;top:78%" onclick="showDetail('phi')">
+            <div class="circle">道</div><span class="lbl">儒释道融通</span>
+        </div>
+        <!-- 生活 -->
+        <div class="tnode life" id="n-life" style="left:42%;top:82%" onclick="showDetail('life')">
+            <div class="circle">食</div><span class="lbl">生活美学</span>
+        </div>
+    </div>
+</section>
+
+<!-- 详情面板 -->
+<div class="overlay" id="overlay" onclick="closeDetail()"></div>
+<div id="detail-panel">
+    <button class="close-btn" onclick="closeDetail()">✕</button>
+    <span class="panel-tag" id="panel-tag"></span>
+    <h3 id="panel-title"></h3>
+    <p id="panel-text"></p>
+    <div class="works" id="panel-works"></div>
+</div>
+
+<!-- 分类知识卡片 -->
+<section class="knowledge-cards">
+    <div class="section-header" style="margin-bottom:4rem">
+        <span class="label" style="color:rgba(245,240,232,.4);border-color:rgba(245,240,232,.15)">知 · 识 · 详 · 解</span>
+        <h2 style="color:var(--paper)">五域纵览</h2>
+        <div class="divider"></div>
+    </div>
+    <div class="k-grid">
+        <div class="k-card">
+            <div class="k-icon">📜</div>
+            <h3>文学成就</h3>
+            <p>苏轼是北宋文学的巅峰人物，诗词文赋兼擅，开创豪放词派，与辛弃疾并称"苏辛"。</p>
+            <ul>
+                <li>开创豪放词风，打破"词为艳科"的传统</li>
+                <li>诗与黄庭坚并称"苏黄"</li>
+                <li>散文位列"唐宋八大家"</li>
+                <li>赋作《赤壁赋》被誉为千古绝唱</li>
+            </ul>
+        </div>
+        <div class="k-card">
+            <div class="k-icon">🏛️</div>
+            <h3>政治生涯</h3>
+            <p>苏轼一生经历仁宗、英宗、神宗、哲宗四朝，因政见不合与乌台诗案，宦海沉浮近四十年。</p>
+            <ul>
+                <li>反对王安石变法中的激进措施</li>
+                <li>乌台诗案入狱一百三十天</li>
+                <li>先后贬谪黄州、惠州、儋州</li>
+                <li>任地方官期间政绩卓著，深受百姓爱戴</li>
+            </ul>
+        </div>
+        <div class="k-card">
+            <div class="k-icon">🖌️</div>
+            <h3>书画艺术</h3>
+            <p>苏轼书法位列"宋四家"之首（苏黄米蔡），擅长行书；绘画提倡"文人画"，重神韵而轻形似。</p>
+            <ul>
+                <li>书法代表作《寒食帖》被誉为"天下第三行书"</li>
+                <li>提出"论画以形似，见与儿童邻"的艺术主张</li>
+                <li>擅画竹石，以墨竹最为著名</li>
+                <li>推动宋代文人画的发展</li>
+            </ul>
+        </div>
+        <div class="k-card">
+            <div class="k-icon">☯️</div>
+            <h3>思想哲学</h3>
+            <p>苏轼以儒家经世济民为本，融合佛道思想，形成独特的旷达人生哲学。</p>
+            <ul>
+                <li>儒家：积极入世、忧国忧民</li>
+                <li>道家：顺应自然、超然物外</li>
+                <li>佛家：看破执念、随缘自适</li>
+                <li>"也无风雨也无晴"——三教融通的极致表达</li>
+            </ul>
+        </div>
+        <div class="k-card">
+            <div class="k-icon">🍜</div>
+            <h3>生活美学</h3>
+            <p>苏轼是中国文人中最懂生活的人——即使在最困难的境遇中，也能把日子过成诗。</p>
+            <ul>
+                <li>发明东坡肉、东坡饼等美食</li>
+                <li>精于品茶，有"从来佳茗似佳人"之句</li>
+                <li>善酿酒，作《酒经》</li>
+                <li>"人间有味是清欢"的生活态度</li>
+            </ul>
+        </div>
+        <div class="k-card">
+            <div class="k-icon">🤝</div>
+            <h3>人际关系</h3>
+            <p>苏轼重情重义，与家人、师友、弟子之间有许多令人动容的故事。</p>
+            <ul>
+                <li>与弟苏辙一生情深，书信不断</li>
+                <li>师从欧阳修，传承古文运动</li>
+                <li>门下"苏门四学士"：黄庭坚、秦观、晁补之、张耒</li>
+                <li>悼亡妻王弗的《江城子》感人至深</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <div class="seal-footer">蘇</div>
+    <p>江城子 · 密州出猎 — 词学研习网站</p>
+    <p style="margin-top:.5rem;opacity:.5">以墨为魂，以词为骨</p>
+</footer>
+
+<script>
+// 绘制连线
+function drawLines(){
+    const canvas=document.getElementById('topology-canvas');
+    const svg=document.getElementById('topo-svg');
+    const rect=canvas.getBoundingClientRect();
+    svg.innerHTML='';
+
+    const center={x:canvas.offsetWidth/2, y:canvas.offsetHeight/2};
+    const nodes=canvas.querySelectorAll('.tnode:not(.core)');
+
+    nodes.forEach(n=>{
+        const nx=n.offsetLeft+n.offsetWidth/2;
+        const ny=n.offsetTop+n.offsetHeight/2;
+        const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+        line.setAttribute('x1',center.x);
+        line.setAttribute('y1',center.y);
+        line.setAttribute('x2',nx);
+        line.setAttribute('y2',ny);
+        svg.appendChild(line);
+    });
+}
+drawLines();
+window.addEventListener('resize',drawLines);
+
+// 详情数据
+const details={
+    core:{tag:'核心',title:'苏轼 · 东坡居士',text:'苏轼（1037-1101），字子瞻，号东坡居士，眉山人。北宋最伟大的文学家、书画家、政治家。一生宦海沉浮，却以旷达的胸襟和卓越的才华，在中国文化史上留下了不可磨灭的印记。他是罕见的全才——诗词文赋书画无所不精，同时也是一个热爱生活、重情重义的真性情之人。',works:['诗人','词人','散文家','书法家','画家','美食家','政治家']},
+    lit:{tag:'文学 · 词',title:'豪放词派开创者',text:'苏轼打破了"词为艳科"的传统观念，将词从花间月下的狭小天地中解放出来。《江城子·密州出猎》被认为是豪放词的开山之作。他以��入词，拓宽了词的题材与境界，使词真正成为可以言志抒怀的文学形式。与辛弃疾并称"苏辛"，共同代表豪放词派的最高成就。',works:['《江城子·密州出猎》','《念奴娇·赤壁怀古》','《水调歌头·明月几时有》','《定风波》','《江城子·乙卯正月二十日夜记梦》']},
+    lit2:{tag:'文学 · 诗',title:'苏诗——与黄庭坚并称"苏黄"',text:'苏轼诗作题材广泛，风格多变，有豪放壮阔，有清新隽永，有深沉感慨。他的诗善于将哲理融入日常景物的描写中，"不识庐山真面目，只缘身在此山中"等名句流传千古。与黄庭坚并称"苏黄"，为宋诗的代表。',works:['《题西林壁》','《饮湖上初晴后雨》','《惠崇春江晚景》','《和子由渑池怀旧》']},
+    lit3:{tag:'文学 · 文',title:'唐宋八大家之一',text:'苏轼的散文纵横恣肆、明白畅达，与欧阳修并称"欧苏"。其文兼有说理、叙事、抒情之长，前后《赤壁赋》为中国文学史上的散文巅峰。苏轼主张"文以载道"，同时强调文章应"��云流水"，自然天成。',works:['《前赤壁赋》','《后赤壁赋》','《石钟山记》','《记承天寺夜游》']},
+    pol:{tag:'政治',title:'仕途沉浮四十载',text:'苏轼二十一岁进士及第，仕途本一片光明。然而因反对王安石变法中的激进措施，自请外调。此后经历乌台诗案、三次重大贬谪（黄州、惠州、儋州），一生宦海起伏。但无论身处何地，他都勤政爱民，留下了杰出的政绩。',works:['杭州疏浚西湖','徐州抗洪','密州灭蝗','惠州修桥']},
+    pol2:{tag:'政治 · 事件',title:'乌台诗案——文字狱',text:'元丰二年（1079年），苏轼的诗文被政敌断章取义，诬为讽刺新法。他被逮捕入御史台（因院内有柏树、乌鸦栖息，故称"乌台"）。在狱中一百三十天，苏轼几近丧命。幸得多方营救，最终贬为黄州团练副使。这场文字狱深刻改变了苏轼的人生观和创作风格。',works:['乌台诗案','元丰二年','一百三十天','贬谪黄州']},
+    art:{tag:'艺术 · 书法',title:'宋四家之首',text:'苏轼书法被列为"宋四家"（苏黄米蔡）之首。他主张"我书意造本无法，点画信手烦推求"，强调书法应表达个人性情。其行书肥厚跌宕、雄浑大气，代表作《寒食帖》被誉为"天下第三行书"（仅次于王羲之《兰亭集序》和颜真卿《祭侄文稿》）。',works:['《黄州寒食帖》','《赤壁赋卷》','《洞庭春色赋》']},
+    art2:{tag:'艺术 · 绘画',title:'文人画的推动者',text:'苏轼在绘画理论上提出"论画以形似，见与儿童邻"，主张绘画不应拘泥于外在形似，而应追求神韵和意境。他擅画墨竹、枯木、怪石，以简约笔墨表达高洁情操，对后世文人画的发展产生了深远影响。',works:['《枯木怪石图》','《潇湘竹石图》','文人画理论']},
+    phi:{tag:'哲学',title:'儒释道融通',text:'苏轼的思想兼收并蓄：以儒家"达则兼济天下"的精神积极入世，以道家"齐物逍遥"的思想超然物外，以佛家"随缘自适"的智慧化解苦难。正是这种三教融通的思想基础，使他在反复的贬谪打击中始终保持旷达乐观的人生态度。',works:['儒家经世','道家逍遥','佛家随缘','旷达人生观']},
+    life:{tag:'生活',title:'人间烟火亦诗意',text:'苏轼是中国文人中最富生活情趣的人。他发明了东坡肉、东坡饼等美食；精于品茶酿酒；善于在平淡日常中发现美。他在黄州穷困潦倒时发明东坡肉，在惠州买不起羊肉时发现了烤羊脊骨的美味——这种将苦难转化为诗意的能力，正是苏轼最动人的品质。',works:['东坡肉','东坡饼','品茶','酿酒','人间有味是清欢']}
+};
+
+function showDetail(key){
+    const d=details[key];
+    if(!d)return;
+    document.getElementById('panel-tag').textContent=d.tag;
+    document.getElementById('panel-title').textContent=d.title;
+    document.getElementById('panel-text').textContent=d.text;
+    const w=document.getElementById('panel-works');
+    w.innerHTML=d.works.map(i=>'<span>'+i+'</span>').join('');
+    document.getElementById('detail-panel').classList.add('open');
+    document.getElementById('overlay').classList.add('open');
+}
+function closeDetail(){
+    document.getElementById('detail-panel').classList.remove('open');
+    document.getElementById('overlay').classList.remove('open');
+}
+</script>
+</body>
+</html>

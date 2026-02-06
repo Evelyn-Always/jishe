@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>课后练习 — 词学研习</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200;300;400;500;600;700;900&family=Ma+Shan+Zheng&display=swap');
+        :root{--ink-black:#1a1a1a;--ink-dark:#2c2c2c;--ink-gray:#555;--ink-light:#888;--paper:#f5f0e8;--seal-red:#c23a2b;--correct:#2e7d32;--wrong:#b71c1c}
+        *{margin:0;padding:0;box-sizing:border-box}
+        html{scroll-behavior:smooth}
+        body{font-family:'Noto Serif SC',serif;background:var(--paper);color:var(--ink-black);overflow-x:hidden}
+
+        nav{position:fixed;top:0;left:0;width:100%;z-index:9000;background:rgba(26,26,26,.95);backdrop-filter:blur(15px);box-shadow:0 2px 30px rgba(0,0,0,.3);padding:.6rem 0}
+        nav .nav-inner{max-width:1400px;margin:0 auto;padding:0 2rem;display:flex;align-items:center;justify-content:space-between}
+        nav .logo{font-family:'Ma Shan Zheng',cursive;font-size:1.6rem;color:var(--paper);text-decoration:none;display:flex;align-items:center;gap:.5rem}
+        nav .logo .seal-sm{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border:2px solid var(--seal-red);color:var(--seal-red);font-size:.9rem}
+        nav ul{display:flex;list-style:none;gap:.3rem}
+        nav ul li a{color:rgba(245,240,232,.7);text-decoration:none;font-size:.9rem;padding:.5rem 1rem;border-radius:4px;transition:.3s;position:relative}
+        nav ul li a:hover,nav ul li a.active{color:var(--paper);background:rgba(245,240,232,.08)}
+        nav ul li a.active::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:20px;height:2px;background:var(--seal-red)}
+        .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer}
+        .hamburger span{width:25px;height:2px;background:var(--paper);transition:.3s}
+
+        .page-hero{min-height:50vh;display:flex;align-items:center;justify-content:center;background:var(--ink-black);position:relative;overflow:hidden;text-align:center}
+        .page-hero::before{content:'练';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Ma Shan Zheng',cursive;font-size:40vw;color:rgba(245,240,232,.02);pointer-events:none}
+        .page-hero-content{position:relative;z-index:1;padding:2rem}
+        .page-hero-content .label{display:inline-block;font-size:.8rem;letter-spacing:6px;color:rgba(245,240,232,.4);border:1px solid rgba(245,240,232,.15);padding:.3rem 1.2rem;margin-bottom:1.5rem}
+        .page-hero-content h1{font-family:'Ma Shan Zheng',cursive;font-size:clamp(2.5rem,6vw,5rem);color:var(--paper);margin-bottom:1rem}
+        .page-hero-content p{color:rgba(245,240,232,.5);font-size:1.1rem;max-width:600px;margin:0 auto;line-height:1.8}
+
+        /* 进度条 */
+        .progress-section{padding:3rem 2rem 0;max-width:800px;margin:0 auto}
+        .progress-bar-wrap{display:flex;align-items:center;gap:1rem}
+        .progress-bar{flex:1;height:6px;background:rgba(0,0,0,.08);border-radius:3px;overflow:hidden}
+        .progress-bar .fill{height:100%;background:var(--seal-red);border-radius:3px;transition:width .5s;width:0}
+        .progress-text{font-size:.85rem;color:var(--ink-light);min-width:100px;text-align:right}
+
+        /* 题目 */
+        .quiz-section{padding:3rem 2rem 6rem;max-width:800px;margin:0 auto}
+        .quiz-card{background:rgba(255,255,255,.7);border:1px solid rgba(0,0,0,.06);padding:2.5rem;margin-bottom:2rem;position:relative;transition:.3s;display:none}
+        .quiz-card.active{display:block;animation:fadeIn .5s ease}
+        .quiz-card.answered-correct{border-color:rgba(46,125,50,.3);background:rgba(46,125,50,.03)}
+        .quiz-card.answered-wrong{border-color:rgba(183,28,28,.3);background:rgba(183,28,28,.03)}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+
+        .quiz-card .q-num{display:inline-block;font-family:'Ma Shan Zheng',cursive;font-size:1.8rem;color:var(--seal-red);margin-bottom:.5rem}
+        .quiz-card .q-type{display:inline-block;margin-left:.8rem;font-size:.75rem;padding:.2rem .6rem;border:1px solid rgba(0,0,0,.1);color:var(--ink-light);letter-spacing:2px;vertical-align:middle}
+        .quiz-card .q-text{font-size:1.05rem;line-height:1.9;margin:1rem 0 1.5rem;color:var(--ink-dark)}
+
+        .options{display:flex;flex-direction:column;gap:.6rem}
+        .option{display:flex;align-items:center;gap:1rem;padding:1rem 1.2rem;border:1px solid rgba(0,0,0,.08);cursor:pointer;transition:.3s}
+        .option:hover:not(.disabled){background:rgba(194,58,43,.04);border-color:rgba(194,58,43,.2)}
+        .option.selected{border-color:var(--seal-red);background:rgba(194,58,43,.06)}
+        .option.correct{border-color:var(--correct)!important;background:rgba(46,125,50,.06)!important}
+        .option.wrong{border-color:var(--wrong)!important;background:rgba(183,28,28,.06)!important}
+        .option.disabled{cursor:default;opacity:.7}
+        .option .opt-letter{width:30px;height:30px;border-radius:50%;border:1px solid rgba(0,0,0,.15);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:600;transition:.3s;flex-shrink:0}
+        .option.selected .opt-letter{background:var(--seal-red);color:#fff;border-color:var(--seal-red)}
+        .option.correct .opt-letter{background:var(--correct);color:#fff;border-color:var(--correct)}
+        .option.wrong .opt-letter{background:var(--wrong);color:#fff;border-color:var(--wrong)}
+        .option .opt-text{font-size:.92rem;color:var(--ink-gray);line-height:1.6}
+
+        .fill-input{width:100%;padding:1rem;border:1px solid rgba(0,0,0,.1);background:rgba(255,255,255,.5);font-family:'Noto Serif SC',serif;font-size:1rem;color:var(--ink-dark);outline:none;transition:.3s}
+        .fill-input:focus{border-color:var(--seal-red)}
+        .fill-input.correct-input{border-color:var(--correct);background:rgba(46,125,50,.04)}
+        .fill-input.wrong-input{border-color:var(--wrong);background:rgba(183,28,28,.04)}
+
+        .essay-textarea{width:100%;min-height:150px;padding:1rem;border:1px solid rgba(0,0,0,.1);background:rgba(255,255,255,.5);font-family:'Noto Serif SC',serif;font-size:.95rem;color:var(--ink-dark);outline:none;resize:vertical;line-height:1.8;transition:.3s}
+        .essay-textarea:focus{border-color:var(--seal-red)}
+
+        .explanation{display:none;margin-top:1.5rem;padding:1.5rem;background:rgba(0,0,0,.02);border-left:3px solid var(--seal-red)}
+        .explanation.show{display:block;animation:fadeIn .4s ease}
+        .explanation h4{font-family:'Ma Shan Zheng',cursive;font-size:1.1rem;color:var(--seal-red);margin-bottom:.6rem}
+        .explanation p{font-size:.88rem;line-height:1.9;color:var(--ink-gray)}
+
+        .btn-row{display:flex;gap:1rem;margin-top:1.5rem;flex-wrap:wrap}
+        .btn{padding:.8rem 2rem;border:1px solid rgba(0,0,0,.15);background:transparent;font-family:'Noto Serif SC',serif;font-size:.9rem;cursor:pointer;transition:.3s;letter-spacing:2px;color:var(--ink-dark)}
+        .btn:hover{background:rgba(0,0,0,.04)}
+        .btn-primary{background:var(--seal-red);color:#fff;border-color:var(--seal-red)}
+        .btn-primary:hover{background:#a82e1f}
+
+        /* 成绩单 */
+        .result-section{display:none;padding:4rem 2rem;max-width:700px;margin:0 auto;text-align:center}
+        .result-section.show{display:block}
+        .result-seal{width:120px;height:120px;border:3px solid var(--seal-red);display:inline-flex;align-items:center;justify-content:center;font-family:'Ma Shan Zheng',cursive;font-size:3rem;color:var(--seal-red);margin-bottom:2rem;animation:sealPulse 2s ease-in-out infinite}
+        @keyframes sealPulse{0%,100%{box-shadow:0 0 20px rgba(194,58,43,.2)}50%{box-shadow:0 0 40px rgba(194,58,43,.5)}}
+        .result-section h2{font-family:'Ma Shan Zheng',cursive;font-size:2.5rem;margin-bottom:1rem}
+        .result-score{font-size:4rem;font-family:'Ma Shan Zheng',cursive;color:var(--seal-red);margin:1rem 0}
+        .result-msg{font-size:1rem;color:var(--ink-gray);line-height:1.8;margin-bottom:2rem}
+        .result-details{text-align:left;background:rgba(255,255,255,.6);border:1px solid rgba(0,0,0,.06);padding:2rem;margin-bottom:2rem}
+        .result-details .row{display:flex;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid rgba(0,0,0,.04);font-size:.9rem;color:var(--ink-gray)}
+        .result-details .row:last-child{border-bottom:none}
+        .result-details .row .val{font-weight:600;color:var(--ink-dark)}
+
+        footer{background:var(--ink-black);border-top:1px solid rgba(245,240,232,.08);padding:3rem 2rem;text-align:center}
+        footer p{color:rgba(245,240,232,.3);font-size:.8rem;letter-spacing:2px}
+        footer .seal-footer{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border:2px solid rgba(194,58,43,.4);color:rgba(194,58,43,.6);font-family:'Ma Shan Zheng',cursive;font-size:1.2rem;margin-bottom:1rem}
+
+        @media(max-width:768px){
+            .hamburger{display:flex}
+            nav ul{position:fixed;top:0;right:-100%;width:70%;height:100vh;background:rgba(26,26,26,.98);flex-direction:column;padding:5rem 2rem;transition:right .4s;gap:.5rem}
+            nav ul.open{right:0}
+            .quiz-card{padding:1.5rem}
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-inner">
+        <a href="index5.html" class="logo"><span class="seal-sm">蘇</span>词学研习</a>
+        <div class="hamburger" onclick="document.getElementById('nav-menu').classList.toggle('open')"><span></span><span></span><span></span></div>
+        <ul id="nav-menu">
+            <li><a href="index5.html">首页</a></li>
+            <li><a href="biography5.html">苏轼生平</a></li>
+            <li><a href="analysis5.html">词作解析</a></li>
+            <li><a href="knowledge5.html">知识拓扑</a></li>
+            <li><a href="quiz5.html" class="active">课后练习</a></li>
+            <li><a href="summary5.html">回顾总结</a></li>
+        </ul>
+    </div>
+</nav>
+
+<section class="page-hero">
+    <div class="page-hero-content">
+        <span class="label">课 · 后 · 练 · 习</span>
+        <h1>学以致用</h1>
+        <p>检验你对苏轼与《江城子·密州出猎》的理解。<br>选择题、填空题、主观分析题——逐一挑战！</p>
+    </div>
+</section>
+
+<div class="progress-section">
+    <div class="progress-bar-wrap">
+        <div class="progress-bar"><div class="fill" id="progress-fill"></div></div>
+        <span class="progress-text" id="progress-text">第 1 题 / 共 10 题</span>
+    </div>
+</div>
+
+<div class="quiz-section" id="quiz-section">
+
+    <!-- Q1 -->
+    <div class="quiz-card active" id="q1">
+        <span class="q-num">壹</span><span class="q-type">选择题</span>
+        <p class="q-text">《江城子·密州出猎》中，"老夫聊发少年狂"一句中"狂"字的作用是什么？</p>
+        <div class="options" data-correct="B">
+            <div class="option" onclick="selectOpt(this)"><span class="opt-letter">A</span><span class="opt-text">表现苏轼精神失常的状态</span></div>
+            <div class="option" onclick="selectOpt(this)"><span class="opt-letter">B</span><span class="opt-text">统领全词，奠定豪放激昂的基调</span></div>
+            <div class="option" onclick="selectOpt(this)"><span class="opt-letter">C</span><span class="opt-text">表达苏轼对年老的不满</span></div>
+            <div class="option" onclick="selectOpt(this)"><span class="opt-letter">D</span><span class="opt-text">表明苏轼不拘礼法的叛逆性格</span></div>
+        </div>
+        <div class="explanation" id="exp1"><h4>📖 解析</h4><p>"狂"是全词的词眼，意为豪情满怀、意气风发。它统领全词，奠定了豪放激昂的感情基调。上阙写出猎之"狂态"，下阙抒报国之"狂志"，均由此字统摄。</p></div>
+        <div class="btn-row">
+            <button class="btn btn-primary" onclick="submitChoice(1)">确认答案</button>
+            <button class="btn" onclick="goNext(2)" style="display:none" id="next1">下一题 →</button>
+        </div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="quiz-card" id="q2">
+        <span class="q-num">贰</span><span class="q-type">选择题</span>
+        <p class="q-text">"为报倾城随太守，亲射虎，看孙郎"运用了哪个历史人物的典故？</p>
+        <div class="options" data-correct="C">
+            <div class="option" onclick="selectOpt(this)"><span class="opt-letter">A</span><span class="opt-text">刘备</span></div>
+            <div class="option" onclick="selectOpt(this)"><span class="opt-letter">B</span><span class="opt-text">曹操</span></div>
+            <div class="option" onclick="selectOpt(this)"><span class="opt-letter">C</span><span class="opt-text">孙权</span></div>
+            <div class="option" onclick="selectOpt(this)"><span class="opt-letter">D</span><span class="opt-text">关羽</span></div>
+        </div>
+        <div class="explanation" id="exp2"><h4>📖 解析</h4><p>"孙郎"即孙权。据《三国志》记载，孙权曾亲自射虎。苏轼以孙权自喻，表现虽身为文官亦有不减孙权的英武豪情。</p></div>
+        <div class="btn-row">
+            <button class="btn btn-primary" onclick="submitChoice(2)">确认答案</button>
+            <button class="btn" onclick="goNext(3)" style="display:none" id="next2">下一题 →</button>
+        </div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="quiz-card" id="q3">
+        <span class="q-num">叁</span><span class="q-type">选择题</span>
+        <p class="q-text">"持节云中，何日遣冯唐"中苏轼将自己比作谁？</p>
+        <div class="options" data-correct="B">
+            <div class="option" onclick="selectOpt(this)"><span class="opt-letter">A</span><span class="opt-text">冯唐</span></div>
+            <div class="option" onclick="selectOpt(this)"><span class="opt-letter">B</span><span class="opt-text">魏尚</span></div>
+            <div class="option" onclick="selectOpt(this)"><span class="opt-letter">C</span><span class="opt-text">汉文帝</span></div>
+            <div class="option" onclick="selectOpt(this)"><span class="opt-letter">D</span><span class="opt-text">李广</span></div>
+        </div>
+        <div class="explanation" id="exp3"><h4>📖 解析</h4><p>魏尚守边有功却因小过获罪，冯唐上书辩护后文帝重新起用魏尚。苏轼以魏尚自比，表达渴望被朝廷重新信任、委以重任的心情。</p></div>
+        <div class="btn-row">
+            <button class="btn btn-primary" onclick="submitChoice(3)">确认答案</button>
+            <button class="btn" onclick="goNext(4)" style="display:none" id="next3">下一题 →</button>
+        </div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="quiz-card" id="q4">
+        <span class="q-num">肆</span><span class="q-type">选择题</span>
+        <p class="q-text">"射天狼"中的"天狼"比喻什么？</p>
+        <div class="options" data-correct="A">
+            <div class="option" onclick="selectOpt(this)"><span class="opt-letter">A</span><span class="opt-text">西北边境的敌人（西夏等）</span></div>
+            <div class="option" onclick="selectOpt(this)"><span class="opt-letter">B</span><span class="opt-text">朝廷中的政敌</span></div>
+            <div class="option" onclick="selectOpt(this)"><span class="opt-letter">C</span><span class="opt-text">猎场上的猛兽</span></div>
+            <div class="option" onclick="selectOpt(this)"><span class="opt-letter">D</span><span class="opt-text">命运中的苦难</span></div>
+        </div>
+        <div class="explanation" id="exp4"><h4>📖 解析</h4><p>天狼星在古代被认为主侵掠之事。当时宋朝西北面临西夏威胁，苏轼以"射天狼"表达保家卫国的壮志，将个人豪情升华为家国情怀。</p></div>
+        <div class="btn-row">
+            <button class="btn btn-primary" onclick="submitChoice(4)">确认答案</button>
+            <button class="btn" onclick="goNext(5)" style="display:none" id="next4">下一题 →</button>
+        </div>
+    </div>
+
+    <!-- Q5 -->
+    <div class="quiz-card" id="q5">
+        <span class="q-num">伍</span><span class="q-type">选择题</span>
+        <p class="q-text">苏轼写这首词时担任什么职务？</p>
+        <div class="options" data-correct="C">
+            <div class="option" onclick="selectOpt(this)"><span class="opt-letter">A</span><span class="opt-text">杭州通判</span></div>
+            <div class="option" onclick="selectOpt(this)"><span class="opt-letter">B</span><span class="opt-text">翰林学士</span></div>
+            <div class="option" onclick="selectOpt(this)"><span class="opt-letter">C</span><span class="opt-text">密州知州</span></div>
+            <div class="option" onclick="selectOpt(this)"><span class="opt-letter">D</span><span class="opt-text">黄州团练副使</span></div>
+        </div>
+        <div class="explanation" id="exp5"><h4>📖 解析</h4><p>这首词写于宋神宗熙宁八年（1075年），苏轼时任密州（今山东诸城）知州。词中"太守"即苏轼自指。</p></div>
+        <div class="btn-row">
+            <button class="btn btn-primary" onclick="submitChoice(5)">确认答案</button>
+            <button class="btn" onclick="goNext(6)" style="display:none" id="next5">下一题 →</button>
+        </div>
+    </div>
+
+    <!-- Q6 填空 -->
+    <div class="quiz-card" id="q6">
+        <span class="q-num">陆</span><span class="q-type">填空题</span>
+        <p class="q-text">请补全：老夫聊发少年狂，左牵黄，右擎苍。________，千骑卷平冈。</p>
+        <input type="text" class="fill-input" id="fill6" placeholder="请输入四字答案……">
+        <div class="explanation" id="exp6"><h4>📖 解析</h4><p>正确答案：<strong>锦帽貂裘</strong>。锦帽：锦缎帽子；貂裘：貂皮大衣。形容出猎装束的华美，与"千骑卷平冈"共同渲染盛大壮观的出猎场面。</p></div>
+        <div class="btn-row">
+            <button class="btn btn-primary" onclick="submitFill(6,'锦帽貂裘')">确认答案</button>
+            <button class="btn" onclick="goNext(7)" style="display:none" id="next6">下一题 →</button>
+        </div>
+    </div>
+
+    <!-- Q7 填空 -->
+    <div class="quiz-card" id="q7">
+        <span class="q-num">柒</span><span class="q-type">填空题</span>
+        <p class="q-text">请补全：酒酣胸胆尚开张。________，又何妨！</p>
+        <input type="text" class="fill-input" id="fill7" placeholder="请输入三字答案……">
+        <div class="explanation" id="exp7"><h4>📖 解析</h4><p>正确答案：<strong>鬓微霜</strong>。鬓角微白，暗示年岁已大，但紧接"又何妨"表达不以为意的壮志豪情。</p></div>
+        <div class="btn-row">
+            <button class="btn btn-primary" onclick="submitFill(7,'鬓微霜')">确认答案</button>
+            <button class="btn" onclick="goNext(8)" style="display:none" id="next7">下一题 →</button>
+        </div>
+    </div>
+
+    <!-- Q8 填空 -->
+    <div class="quiz-card" id="q8">
+        <span class="q-num">捌</span><span class="q-type">填空题</span>
+        <p class="q-text">请补全：会挽雕弓如满月，________，射天狼。</p>
+        <input type="text" class="fill-input" id="fill8" placeholder="请输入三字答案……">
+        <div class="explanation" id="exp8"><h4>📖 解析</h4><p>正确答案：<strong>西北望</strong>。当时宋朝西北面临西夏威胁，"西北望"点明方向，与"射天狼"呼应，表达词人渴望为国御敌的壮志。</p></div>
+        <div class="btn-row">
+            <button class="btn btn-primary" onclick="submitFill(8,'西北望')">确认答���</button>
+            <button class="btn" onclick="goNext(9)" style="display:none" id="next8">下一题 →</button>
+        </div>
+    </div>
+
+    <!-- Q9 主观 -->
+    <div class="quiz-card" id="q9">
+        <span class="q-num">玖</span><span class="q-type">主观分析题</span>
+        <p class="q-text">请分析"会挽雕弓如满月，西北望，射天狼"这三句在全词中的作用，以及它表达了苏轼怎样的思想感情。</p>
+        <textarea class="essay-textarea" id="essay9" placeholder="请在此写下你的分析……"></textarea>
+        <div class="explanation" id="exp9"><h4>📖 参考答案</h4><p>这三句是全词的高潮与主旨所在。<strong>作用：</strong>①"雕弓如满月"以比喻手法塑造了词人挽弓待发的英武形象，极富画面感；②"西北望"点明方向，呼应当时宋朝西北边防的现实；③"射天狼"以天狼星借代入侵之敌，将个人出猎的豪情升华为保家卫国的壮志。<strong>思想感情：</strong>这三句集中表达了苏轼虽身处外任、政治失意，却依然心系国家安危，渴望为国建功立业的爱国情怀和��扬壮志。全词由"出猎"到"言志"再到"报国"，情感层层递进，至此达到最强音。</p></div>
+        <div class="btn-row">
+            <button class="btn btn-primary" onclick="submitEssay(9)">查看参考答案</button>
+            <button class="btn" onclick="goNext(10)" style="display:none" id="next9">下一题 →</button>
+        </div>
+    </div>
+
+    <!-- Q10 主观 -->
+    <div class="quiz-card" id="q10">
+        <span class="q-num">拾</span><span class="q-type">主观分析题</span>
+        <p class="q-text">结合苏轼的生平经历，谈谈《江城子·密州出猎》这首词是如何体现苏轼人格风貌的。</p>
+        <textarea class="essay-textarea" id="essay10" placeholder="请在此写下你的分析……"></textarea>
+        <div class="explanation" id="exp10"><h4>📖 参考答案</h4><p>《江城子·密州出猎》集中体现了苏轼人格中的几个核心特质：<br><br><strong>一、豪放旷达。</strong>"老夫聊发少年狂"——苏轼时年四十，因反对变法被外调密州，远离权力中心。但他不消沉、不颓废，反而以一种"少年狂"的豪迈姿态面对人生的低谷，展现了"一蓑烟雨任平生"的旷达胸襟。<br><br><strong>二、壮心不已。</strong>"鬓微霜，又何妨"——苏轼虽已鬓发斑白，却丝毫不以年老为意。"又何妨"三字掷地有声，是对岁月流逝的藐视，更是对自我价值的坚定肯定。<br><br><strong>三、忧国忧民。</strong>"持节云中，何日遣冯唐""射天狼"——苏轼虽在地方为官，却始终心系国家安危。他渴望被重新起用，不是为了个人荣华，而是为了"西北望，射天狼"——抵御外敌、保卫疆土。这种将个人命运与国家前途紧密相连的精神，正是苏轼人格的核心所在。<br><br><strong>四、以英雄自许。</strong>以孙权、魏尚自比，显示他虽以文名世，实有将帅之志。<br><br>总之，这首词淋漓尽致地展现了一个虽处逆境却依然豪迈、虽遭冷落却依然热血、虽年华老去却依然壮志不减的伟大灵魂。</p></div>
+        <div class="btn-row">
+            <button class="btn btn-primary" onclick="submitEssay(10)">查看参考答案</button>
+            <button class="btn" onclick="showResult()" style="display:none" id="next10">查看成绩 →</button>
+        </div>
+    </div>
+</div>
+
+<!-- 成绩单 -->
+<div class="result-section" id="result-section">
+    <div class="result-seal">成</div>
+    <h2>练习完成</h2>
+    <div class="result-score" id="result-score"></div>
+    <p class="result-msg" id="result-msg"></p>
+    <div class="result-details">
+        <div class="row"><span>选择题（5题）</span><span class="val" id="r-choice"></span></div>
+        <div class="row"><span>填空题（3题）</span><span class="val" id="r-fill"></span></div>
+        <div class="row"><span>主观分析题（2题）</span><span class="val">已查看参考答案</span></div>
+        <div class="row"><span>客观题正确率</span><span class="val" id="r-rate"></span></div>
+    </div>
+    <div class="btn-row" style="justify-content:center">
+        <button class="btn" onclick="location.reload()">重新练习</button>
+        <a href="summary5.html" class="btn btn-primary" style="text-decoration:none;text-align:center">前往总结 →</a>
+    </div>
+</div>
+
+<footer>
+    <div class="seal-footer">蘇</div>
+    <p>江城子 · 密州出猎 — 词学研习网站</p>
+    <p style="margin-top:.5rem;opacity:.5">以墨为魂，以词为骨</p>
+</footer>
+
+<script>
+const TOTAL=10;
+let current=1;
+let choiceCorrect=0;
+let fillCorrect=0;
+
+function updateProgress(){
+    document.getElementById('progress-fill').style.width=(current/TOTAL*100)+'%';
+    document.getElementById('progress-text').textContent='第 '+current+' 题 / 共 '+TOTAL+' 题';
+}
+updateProgress();
+
+function selectOpt(el){
+    const opts=el.parentElement;
+    if(opts.classList.contains('locked'))return;
+    opts.querySelectorAll('.option').forEach(o=>o.classList.remove('selected'));
+    el.classList.add('selected');
+}
+
+function submitChoice(n){
+    const card=document.getElementById('q'+n);
+    const opts=card.querySelector('.options');
+    if(opts.classList.contains('locked'))return;
+    const selected=opts.querySelector('.option.selected');
+    if(!selected){alert('请先选择一个答案');return;}
+
+    opts.classList.add('locked');
+    const correct=opts.dataset.correct;
+    const selectedLetter=selected.querySelector('.opt-letter').textContent;
+
+    opts.querySelectorAll('.option').forEach(o=>{
+        o.classList.add('disabled');
+        if(o.querySelector('.opt-letter').textContent===correct)o.classList.add('correct');
+    });
+
+    if(selectedLetter===correct){
+        card.classList.add('answered-correct');
+        choiceCorrect++;
+    }else{
+        selected.classList.add('wrong');
+        card.classList.add('answered-wrong');
+    }
+
+    document.getElementById('exp'+n).classList.add('show');
+    document.getElementById('next'+n).style.display='inline-block';
+}
+
+function submitFill(n,answer){
+    const input=document.getElementById('fill'+n);
+    const card=document.getElementById('q'+n);
+    if(input.disabled)return;
+    const val=input.value.trim();
+    if(!val){alert('请输入答案');return;}
+
+    input.disabled=true;
+    if(val===answer){
+        input.classList.add('correct-input');
+        card.classList.add('answered-correct');
+        fillCorrect++;
+    }else{
+        input.classList.add('wrong-input');
+        card.classList.add('answered-wrong');
+    }
+    document.getElementById('exp'+n).classList.add('show');
+    document.getElementById('next'+n).style.display='inline-block';
+}
+
+function submitEssay(n){
+    document.getElementById('exp'+n).classList.add('show');
+    document.getElementById('next'+n).style.display='inline-block';
+}
+
+function goNext(n){
+    document.getElementById('q'+(n-1)).classList.remove('active');
+    document.getElementById('q'+n).classList.add('active');
+    current=n;
+    updateProgress();
+    window.scrollTo({top:document.querySelector('.progress-section').offsetTop-80,behavior:'smooth'});
+}
+
+function showResult(){
+    document.getElementById('quiz-section').style.display='none';
+    document.querySelector('.progress-section').style.display='none';
+    const rs=document.getElementById('result-section');
+    rs.classList.add('show');
+
+    const totalObj=choiceCorrect+fillCorrect;
+    const totalQ=8;
+    const pct=Math.round(totalObj/totalQ*100);
+
+    document.getElementById('result-score').textContent=totalObj+' / '+totalQ;
+    document.getElementById('r-choice').textContent=choiceCorrect+' / 5 正确';
+    document.getElementById('r-fill').textContent=fillCorrect+' / 3 正确';
+    document.getElementById('r-rate').textContent=pct+'%';
+
+    let msg='';
+    if(pct>=90)msg='太白遗风！你对苏轼及这首词的理解非常深入，堪称词学研习达人！';
+    else if(pct>=70)msg='颇具才情！基础知识扎实，继续深入探究，定能更上一层楼。';
+    else if(pct>=50)msg='略通一二。建议重新阅读词作解析页面，巩固对重点知识的理解。';
+    else msg='尚需努力。不妨从苏轼生平开始，循序渐进地重新学习。';
+    document.getElementById('result-msg').textContent=msg;
+
+    window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>

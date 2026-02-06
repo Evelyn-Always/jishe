@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>回顾总结 — 词学研习</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200;300;400;500;600;700;900&family=Ma+Shan+Zheng&display=swap');
+        :root{--ink-black:#1a1a1a;--ink-dark:#2c2c2c;--ink-gray:#555;--ink-light:#888;--paper:#f5f0e8;--seal-red:#c23a2b}
+        *{margin:0;padding:0;box-sizing:border-box}
+        html{scroll-behavior:smooth}
+        body{font-family:'Noto Serif SC',serif;background:var(--paper);color:var(--ink-black);overflow-x:hidden}
+
+        nav{position:fixed;top:0;left:0;width:100%;z-index:9000;background:rgba(26,26,26,.95);backdrop-filter:blur(15px);box-shadow:0 2px 30px rgba(0,0,0,.3);padding:.6rem 0}
+        nav .nav-inner{max-width:1400px;margin:0 auto;padding:0 2rem;display:flex;align-items:center;justify-content:space-between}
+        nav .logo{font-family:'Ma Shan Zheng',cursive;font-size:1.6rem;color:var(--paper);text-decoration:none;display:flex;align-items:center;gap:.5rem}
+        nav .logo .seal-sm{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border:2px solid var(--seal-red);color:var(--seal-red);font-size:.9rem}
+        nav ul{display:flex;list-style:none;gap:.3rem}
+        nav ul li a{color:rgba(245,240,232,.7);text-decoration:none;font-size:.9rem;padding:.5rem 1rem;border-radius:4px;transition:.3s;position:relative}
+        nav ul li a:hover,nav ul li a.active{color:var(--paper);background:rgba(245,240,232,.08)}
+        nav ul li a.active::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:20px;height:2px;background:var(--seal-red)}
+        .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer}
+        .hamburger span{width:25px;height:2px;background:var(--paper);transition:.3s}
+
+        .page-hero{min-height:60vh;display:flex;align-items:center;justify-content:center;background:var(--ink-black);position:relative;overflow:hidden;text-align:center}
+        .page-hero .ink-bg{position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at 30% 50%,rgba(139,37,0,.1) 0%,transparent 50%),radial-gradient(ellipse at 70% 50%,rgba(46,74,58,.08) 0%,transparent 50%)}
+        .page-hero::before{content:'结';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Ma Shan Zheng',cursive;font-size:40vw;color:rgba(245,240,232,.02);pointer-events:none}
+        .page-hero-content{position:relative;z-index:1;padding:2rem}
+        .page-hero-content .label{display:inline-block;font-size:.8rem;letter-spacing:6px;color:rgba(245,240,232,.4);border:1px solid rgba(245,240,232,.15);padding:.3rem 1.2rem;margin-bottom:1.5rem}
+        .page-hero-content h1{font-family:'Ma Shan Zheng',cursive;font-size:clamp(2.5rem,6vw,5rem);color:var(--paper);margin-bottom:1rem}
+        .page-hero-content p{color:rgba(245,240,232,.5);font-size:1.1rem;max-width:600px;margin:0 auto;line-height:1.8}
+
+        .section-header{text-align:center;margin-bottom:4rem}
+        .section-header .label{display:inline-block;font-size:.8rem;letter-spacing:6px;color:var(--ink-light);border:1px solid rgba(0,0,0,.1);padding:.3rem 1.2rem;margin-bottom:1.5rem}
+        .section-header h2{font-family:'Ma Shan Zheng',cursive;font-size:clamp(2rem,4vw,3rem);margin-bottom:1rem}
+        .section-header .divider{width:60px;height:2px;background:var(--seal-red);margin:0 auto}
+
+        /* 词作全文 */
+        .full-poem{padding:6rem 2rem;background:var(--ink-black);text-align:center;position:relative;overflow:hidden}
+        .full-poem .float-char{position:absolute;font-family:'Ma Shan Zheng',cursive;color:rgba(245,240,232,.015);pointer-events:none}
+        .full-poem .float-char:nth-child(1){font-size:25vw;top:5%;left:-5%}
+        .full-poem .float-char:nth-child(2){font-size:20vw;bottom:5%;right:-5%}
+        .full-poem .float-char:nth-child(3){font-size:18vw;top:40%;right:15%}
+        .poem-box{max-width:650px;margin:0 auto;position:relative;z-index:1;padding:3rem 2rem;border:1px solid rgba(245,240,232,.08);background:rgba(245,240,232,.03)}
+        .poem-box::before,.poem-box::after{font-family:'Ma Shan Zheng',cursive;font-size:3rem;color:rgba(245,240,232,.1);position:absolute}
+        .poem-box::before{content:'「';top:.5rem;left:1rem}
+        .poem-box::after{content:'」';bottom:.5rem;right:1rem}
+        .poem-box h3{font-family:'Ma Shan Zheng',cursive;font-size:2rem;color:var(--paper);margin-bottom:.5rem}
+        .poem-box .author{color:rgba(245,240,232,.4);font-size:.9rem;letter-spacing:4px;margin-bottom:2rem}
+        .poem-box .lines{font-size:1.2rem;color:rgba(245,240,232,.75);line-height:2.4}
+
+        /* 核心要点 */
+        .recap-section{padding:6rem 2rem}
+        .recap-grid{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:2rem}
+        .recap-card{background:rgba(255,255,255,.6);border:1px solid rgba(0,0,0,.06);padding:2rem;position:relative;overflow:hidden;transition:.5s}
+        .recap-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:3px;background:var(--seal-red);transform:scaleX(0);transform-origin:left;transition:transform .5s}
+        .recap-card:hover::before{transform:scaleX(1)}
+        .recap-card:hover{transform:translateY(-4px);box-shadow:0 15px 40px rgba(0,0,0,.08)}
+        .recap-card .r-num{font-family:'Ma Shan Zheng',cursive;font-size:2.5rem;color:rgba(194,58,43,.15);position:absolute;top:.5rem;right:1rem}
+        .recap-card h3{font-family:'Ma Shan Zheng',cursive;font-size:1.3rem;color:var(--ink-dark);margin-bottom:.8rem}
+        .recap-card p{font-size:.88rem;line-height:1.9;color:var(--ink-gray)}
+
+        /* 精神风貌 */
+        .spirit-section{padding:6rem 2rem;background:var(--ink-black);position:relative;overflow:hidden}
+        .spirit-section::before{content:'魂';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Ma Shan Zheng',cursive;font-size:30vw;color:rgba(245,240,232,.015);pointer-events:none}
+        .spirit-container{max-width:900px;margin:0 auto;position:relative;z-index:1}
+        .spirit-item{display:flex;gap:2rem;margin-bottom:3rem;padding:2rem;border:1px solid rgba(245,240,232,.06);background:rgba(245,240,232,.02);transition:.4s;align-items:flex-start}
+        .spirit-item:hover{background:rgba(245,240,232,.05);border-color:rgba(245,240,232,.1)}
+        .spirit-item .s-icon{font-size:2.5rem;flex-shrink:0;width:60px;text-align:center}
+        .spirit-item .s-body h3{font-family:'Ma Shan Zheng',cursive;font-size:1.4rem;color:var(--paper);margin-bottom:.8rem}
+        .spirit-item .s-body p{font-size:.9rem;line-height:1.9;color:rgba(245,240,232,.55)}
+        .spirit-item .s-body .quote{margin-top:.8rem;padding:.8rem 1rem;border-left:2px solid var(--seal-red);color:rgba(245,240,232,.45);font-size:.85rem;font-style:italic}
+
+        /* 文学地位 */
+        .legacy-section{padding:6rem 2rem}
+        .legacy-container{max-width:900px;margin:0 auto}
+        .legacy-block{background:rgba(255,255,255,.6);border:1px solid rgba(0,0,0,.06);padding:3rem;margin-bottom:2rem;position:relative;overflow:hidden}
+        .legacy-block::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--seal-red)}
+        .legacy-block h3{font-family:'Ma Shan Zheng',cursive;font-size:1.5rem;margin-bottom:1rem;color:var(--ink-dark)}
+        .legacy-block p{font-size:.92rem;line-height:2;color:var(--ink-gray);margin-bottom:.8rem}
+        .legacy-block p:last-child{margin-bottom:0}
+        .legacy-block .hl{color:var(--seal-red);font-weight:600}
+
+        /* 结语 */
+        .ending{padding:6rem 2rem;background:var(--ink-black);text-align:center;position:relative;overflow:hidden}
+        .ending .seal-big{width:140px;height:140px;border:3px solid var(--seal-red);display:inline-flex;align-items:center;justify-content:center;font-family:'Ma Shan Zheng',cursive;font-size:3.5rem;color:var(--seal-red);margin-bottom:2rem;animation:sealGlow 3s ease-in-out infinite}
+        @keyframes sealGlow{0%,100%{box-shadow:0 0 30px rgba(194,58,43,.2)}50%{box-shadow:0 0 60px rgba(194,58,43,.5)}}
+        .ending h2{font-family:'Ma Shan Zheng',cursive;font-size:clamp(2rem,4vw,3rem);color:var(--paper);margin-bottom:1.5rem}
+        .ending .end-poem{font-size:1.15rem;color:rgba(245,240,232,.6);line-height:2.4;max-width:500px;margin:0 auto 2.5rem}
+        .ending .end-text{font-size:.9rem;color:rgba(245,240,232,.4);max-width:700px;margin:0 auto 3rem;line-height:1.8}
+        .ending .nav-links{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+        .ending .nav-links a{padding:.8rem 2rem;border:1px solid rgba(245,240,232,.2);color:var(--paper);text-decoration:none;font-size:.9rem;letter-spacing:2px;transition:.3s}
+        .ending .nav-links a:hover{border-color:var(--seal-red);background:rgba(194,58,43,.1)}
+        .ending .nav-links a.primary{background:var(--seal-red);border-color:var(--seal-red)}
+        .ending .nav-links a.primary:hover{background:#a82e1f}
+
+        footer{background:var(--ink-black);border-top:1px solid rgba(245,240,232,.08);padding:3rem 2rem;text-align:center}
+        footer p{color:rgba(245,240,232,.3);font-size:.8rem;letter-spacing:2px}
+        footer .seal-footer{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border:2px solid rgba(194,58,43,.4);color:rgba(194,58,43,.6);font-family:'Ma Shan Zheng',cursive;font-size:1.2rem;margin-bottom:1rem}
+
+        .reveal{opacity:0;transform:translateY(30px);transition:all .7s ease}
+        .reveal.active{opacity:1;transform:translateY(0)}
+
+        @media(max-width:768px){
+            .hamburger{display:flex}
+            nav ul{position:fixed;top:0;right:-100%;width:70%;height:100vh;background:rgba(26,26,26,.98);flex-direction:column;padding:5rem 2rem;transition:right .4s;gap:.5rem}
+            nav ul.open{right:0}
+            .recap-grid{grid-template-columns:1fr}
+            .spirit-item{flex-direction:column;gap:1rem}
+            .spirit-item .s-icon{width:auto}
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-inner">
+        <a href="index5.html" class="logo"><span class="seal-sm">蘇</span>词学研习</a>
+        <div class="hamburger" onclick="document.getElementById('nav-menu').classList.toggle('open')"><span></span><span></span><span></span></div>
+        <ul id="nav-menu">
+            <li><a href="index5.html">首页</a></li>
+            <li><a href="biography5.html">苏轼生平</a></li>
+            <li><a href="analysis5.html">词作解析</a></li>
+            <li><a href="knowledge5.html">知识拓扑</a></li>
+            <li><a href="quiz5.html">课后练习</a></li>
+            <li><a href="summary5.html" class="active">回顾总结</a></li>
+        </ul>
+    </div>
+</nav>
+
+<section class="page-hero">
+    <div class="ink-bg"></div>
+    <div class="page-hero-content">
+        <span class="label">回 · 顾 · 总 · 结</span>
+        <h1>以词为鉴</h1>
+        <p>千年前的那场出猎，至今仍震撼着每一个中国人的心。<br>让我们回顾所学，铭记东坡之魂。</p>
+    </div>
+</section>
+
+<!-- 词作全文 -->
+<section class="full-poem">
+    <span class="float-char">狂</span>
+    <span class="float-char">猎</span>
+    <span class="float-char">望</span>
+    <div class="section-header reveal">
+        <span class="label" style="color:rgba(245,240,232,.4);border-color:rgba(245,240,232,.15)">全 · 文 · 回 · 顾</span>
+        <h2 style="color:var(--paper)">江城子 · 密州出猎</h2>
+        <div class="divider"></div>
+    </div>
+    <div class="poem-box reveal">
+        <h3>江城子 · 密州出猎</h3>
+        <p class="author">〔 宋 〕苏 轼</p>
+        <div class="lines">
+            老夫聊发少年狂，左牵黄，右擎苍。<br>
+            锦帽貂裘，千骑卷平冈。<br>
+            为报倾城随太守，亲射虎，看孙郎。<br><br>
+            酒酣胸胆尚开张。鬓微霜，又何妨！<br>
+            持节云中，何日遣冯唐？<br>
+            会挽雕弓如满月，西北望，射天狼。
+        </div>
+    </div>
+</section>
+
+<!-- 核心要点 -->
+<section class="recap-section">
+    <div class="section-header reveal">
+        <span class="label">核 · 心 · 要 · 点</span>
+        <h2>所学精要</h2>
+        <div class="divider"></div>
+    </div>
+    <div class="recap-grid">
+        <div class="recap-card reveal">
+            <span class="r-num">壹</span>
+            <h3>词眼"狂"字</h3>
+            <p>"狂"字统领全词，奠定豪放激昂的感情基调。上阙写出猎之"狂态"，下阙抒报国之"狂志"。这个字也是苏轼人格力量的集中体现——不服老、不消沉、不妥协。</p>
+        </div>
+        <div class="recap-card reveal">
+            <span class="r-num">贰</span>
+            <h3>两处用典</h3>
+            <p>①孙权射虎——苏轼以孙权自比，表现英武豪情；②冯唐持节赦魏尚——苏轼以魏尚自喻，表达渴望被重新起用的心情。用典精妙，言近旨远。</p>
+        </div>
+        <div class="recap-card reveal">
+            <span class="r-num">叁</span>
+            <h3>三层递进</h3>
+            <p>全词由浅入深：出猎之壮（叙事）→ 壮志之烈（言志）→ 家国之大（爱国）。由个人出猎升华到保家卫国，格局宏大，气势磅礴。</p>
+        </div>
+        <div class="recap-card reveal">
+            <span class="r-num">肆</span>
+            <h3>开创词风</h3>
+            <p>《江城子·密州出猎》被认为是豪放词的开山之作。苏轼打破了"词为艳科"的传统，使词成为可以抒发壮志豪情的文学形式。</p>
+        </div>
+        <div class="recap-card reveal">
+            <span class="r-num">伍</span>
+            <h3>创作背景</h3>
+            <p>写于熙宁八年（1075年），苏轼任密州知州，年四十。因反对变法而外调，虽远离权力中心，却仍怀报国壮志。十月出猎，豪情激荡，遂成此词。</p>
+        </div>
+        <div class="recap-card reveal">
+            <span class="r-num">陆</span>
+            <h3>名句赏析</h3>
+            <p>"会挽雕弓如满月，西北望，射天狼"——全词最高潮。"雕弓如满月"以比喻塑造英武形象，"天狼"借代入侵之敌，将个人豪情升华为家国情怀。</p>
+        </div>
+    </div>
+</section>
+
+<!-- 精神风貌 -->
+<section class="spirit-section">
+    <div class="section-header reveal" style="margin-bottom:4rem">
+        <span class="label" style="color:rgba(245,240,232,.4);border-color:rgba(245,240,232,.15)">精 · 神 · 风 · 貌</span>
+        <h2 style="color:var(--paper)">词中见人</h2>
+        <div class="divider"></div>
+    </div>
+    <div class="spirit-container">
+        <div class="spirit-item reveal">
+            <div class="s-icon">🏹</div>
+            <div class="s-body">
+                <h3>老当益壮，豪情不减</h3>
+                <p>苏轼时年四十，因政治失意而远离京城，却丝毫没有暮气沉沉。"老夫聊发少年狂"——他以自嘲的口吻说出最不服老的宣言。"左牵黄，右擎苍"的矫健英姿，"千骑卷平冈"的壮阔排场，都在告诉世人：年华可以老去，但壮志永远年轻。</p>
+                <div class="quote">"老夫聊发少年狂，左牵黄，右擎苍。"</div>
+            </div>
+        </div>
+        <div class="spirit-item reveal">
+            <div class="s-icon">⚔️</div>
+            <div class="s-body">
+                <h3>以英雄自许，壮心不已</h3>
+                <p>苏轼以孙权射虎自比，表现出虽为文官却有武将之勇的豪迈气概。"亲射虎，看孙郎"——不是空发议论，而是亲身实践。"酒酣胸胆尚开张"更是直抒胸臆，酒后吐真言，真性情跃然纸上。</p>
+                <div class="quote">"为报倾城随太守，亲射虎，看孙郎。"</div>
+            </div>
+        </div>
+        <div class="spirit-item reveal">
+            <div class="s-icon">🔥</div>
+            <div class="s-body">
+                <h3>藐视困境，直面衰老</h3>
+                <p>"鬓微霜，又何妨！"——这是苏轼面对人生困境的态度。鬓角已白又怎样？被贬外调又怎样？三个字"又何妨"铿锵有力，掷地有声，是对命运的蔑视，更是对自我价值的坚定。这种精神后来贯穿他的一生——无论黄州、惠州还是儋州。</p>
+                <div class="quote">"鬓微霜，又何妨！"</div>
+            </div>
+        </div>
+        <div class="spirit-item reveal">
+            <div class="s-icon">🌟</div>
+            <div class="s-body">
+                <h3>心系家国，志在千里</h3>
+                <p>苏轼最可贵的品质在于：他从不因个人的失意而放弃对国家的担当。"持节云中，何日遣冯唐"——他渴望被重用，不是为了荣华富贵，而是为了"西北望，射天狼"。将一己之情升华为家国之志，将出猎之豪迈升华为保家卫国的壮志——这才是苏轼精神的最高境界。</p>
+                <div class="quote">"会挽雕弓如满月，西北望，射天狼。"</div>
+            </div>
+        </div>
+        <div class="spirit-item reveal">
+            <div class="s-icon">☯️</div>
+            <div class="s-body">
+                <h3>旷达超然，一蓑烟雨</h3>
+                <p>纵观苏轼一生，《密州出猎》中的豪迈并非一时冲动，而是他人格底色的自然流露。从密州到黄州，从惠州到儋州，苏轼越是遭受打击，越是展现出旷达超然的精神力量。"一蓑烟雨任平生""也无风雨也无晴"——正是这首词中"又何妨"精神的延续与升华。</p>
+                <div class="quote">"回首向来萧瑟处，归去，也无风雨也无晴。"</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 文学地位 -->
+<section class="legacy-section">
+    <div class="section-header reveal">
+        <span class="label">文 · 学 · 地 · 位</span>
+        <h2>千古绝响</h2>
+        <div class="divider"></div>
+    </div>
+    <div class="legacy-container">
+        <div class="legacy-block reveal">
+            <h3>豪放词派的开山之作</h3>
+            <p>在苏轼之前，词坛长期被<span class="hl">"花间派"</span>所主导，内容多为男欢女爱、伤春悲秋，词被视为"小道""艳科"。苏轼以《江城子·密州出猎》一词，彻底打破了这一局面。</p>
+            <p>他将词从闺阁绣帘中解放出来，赋予词以<span class="hl">宏大的格局、壮阔的意境、豪迈的情感</span>。从此，词不再只是"诗余"，而成为与诗并驾齐驱的文学形式。后世辛弃疾继承发展，形成"苏辛"并称的豪放词派巅峰。</p>
+        </div>
+        <div class="legacy-block reveal">
+            <h3>苏轼词的革新意义</h3>
+            <p><span class="hl">题材拓展：</span>苏轼将出猎、军事、政治抱负、人生哲理等全新题材引入词中，极大地拓展了词的表现领域。</p>
+            <p><span class="hl">以诗入词：</span>他打破诗词的界限，将诗的表现手法（如用典、议论、叙事）引入词中，提升了词的文学品格。</p>
+            <p><span class="hl">格调升华：</span>从"词为艳科"到"无意不可入，无事不可言"，苏轼使词由俗转雅，由小变大，格调全面提升。</p>
+        </div>
+        <div class="legacy-block reveal">
+            <h3>后世影响</h3>
+            <p>苏轼的词风直接影响了南宋<span class="hl">辛弃疾、陆游、张孝祥</span>等人，形成了蔚为壮观的豪放词派。辛弃疾更是将豪放词推向了新的高度，二人并称"苏辛"。</p>
+            <p>即便到了近现代，苏轼的豪放精神仍然深刻影响着中国文学和中国人的精神世界。"老夫聊发少年狂"成为无数人面对困境时的精神支柱，"一蓑烟雨任平生"成为中国人旷达人生观的经典表达。</p>
+        </div>
+    </div>
+</section>
+
+<!-- 结语 -->
+<section class="ending">
+    <div class="seal-big reveal">蘇</div>
+    <h2 class="reveal">千载东坡，万古风流</h2>
+    <div class="end-poem reveal">
+        老夫聊发少年狂，左牵黄，右擎苍。<br>
+        锦帽貂裘，千骑卷平冈。<br>
+        为报倾城随太守，亲射虎，看孙郎。<br><br>
+        酒酣胸胆尚开张。鬓微霜，又何妨！<br>
+        持节云中，何日遣冯唐？<br>
+        会挽雕弓如满月，西北望，射天狼。
+    </div>
+    <p class="end-text reveal">
+        九百五十年前的那场出猎，苏轼纵马平冈、挽弓如月，将个人的豪情壮志与家国的安危存亡融为一体。
+        他以一首词开创了一个词派，以一生的旷达诠释了中国文人最高的精神境界。
+        读苏轼的词，不仅是文学的享受，更是灵魂的洗礼。
+        愿你在研习之后，心中也有那一弯满月般的雕弓，西北望去，壮志凌云。
+    </p>
+    <div class="nav-links reveal">
+        <a href="index5.html">返回首页</a>
+        <a href="biography5.html">重读生平</a>
+        <a href="analysis5.html">再看解析</a>
+        <a href="quiz5.html" class="primary">重做练习</a>
+    </div>
+</section>
+
+<footer>
+    <div class="seal-footer">蘇</div>
+    <p>江城子 · 密州出猎 — 词学研习网站</p>
+    <p style="margin-top:.5rem;opacity:.5">以墨为魂，以词为骨</p>
+</footer>
+
+<script>
+// 滚动显示动画
+const revealEls=document.querySelectorAll('.reveal');
+const revealOnScroll=()=>{
+    revealEls.forEach(el=>{
+        const top=el.getBoundingClientRect().top;
+        if(top<window.innerHeight-80)el.classList.add('active');
+    });
+};
+window.addEventListener('scroll',revealOnScroll);
+revealOnScroll();
+</script>
+</body>
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>苏轼生平 — 词学研习</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200;300;400;500;600;700;900&family=Ma+Shan+Zheng&display=swap');
+        :root{--ink-black:#1a1a1a;--ink-dark:#2c2c2c;--ink-gray:#555;--ink-light:#888;--paper:#f5f0e8;--seal-red:#c23a2b;--accent-red:#8b2500}
+        *{margin:0;padding:0;box-sizing:border-box}
+        html{scroll-behavior:smooth}
+        body{font-family:'Noto Serif SC',serif;background:var(--paper);color:var(--ink-black);overflow-x:hidden}
+
+        /* ===== 公共导航 ===== */
+        nav{position:fixed;top:0;left:0;width:100%;z-index:9000;background:rgba(26,26,26,.95);backdrop-filter:blur(15px);box-shadow:0 2px 30px rgba(0,0,0,.3);padding:.6rem 0}
+        nav .nav-inner{max-width:1400px;margin:0 auto;padding:0 2rem;display:flex;align-items:center;justify-content:space-between}
+        nav .logo{font-family:'Ma Shan Zheng',cursive;font-size:1.6rem;color:var(--paper);text-decoration:none;display:flex;align-items:center;gap:.5rem}
+        nav .logo .seal-sm{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border:2px solid var(--seal-red);color:var(--seal-red);font-size:.9rem}
+        nav ul{display:flex;list-style:none;gap:.3rem}
+        nav ul li a{color:rgba(245,240,232,.7);text-decoration:none;font-size:.9rem;padding:.5rem 1rem;border-radius:4px;transition:.3s;position:relative}
+        nav ul li a:hover,nav ul li a.active{color:var(--paper);background:rgba(245,240,232,.08)}
+        nav ul li a.active::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:20px;height:2px;background:var(--seal-red)}
+        .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer}
+        .hamburger span{width:25px;height:2px;background:var(--paper);transition:.3s}
+
+        /* ===== 页面头部 ===== */
+        .page-hero{min-height:60vh;display:flex;align-items:center;justify-content:center;background:var(--ink-black);position:relative;overflow:hidden;text-align:center}
+        .page-hero::before{content:'蘇';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Ma Shan Zheng',cursive;font-size:40vw;color:rgba(245,240,232,.02);pointer-events:none}
+        .page-hero-content{position:relative;z-index:1;padding:2rem}
+        .page-hero-content .label{display:inline-block;font-size:.8rem;letter-spacing:6px;color:rgba(245,240,232,.4);border:1px solid rgba(245,240,232,.15);padding:.3rem 1.2rem;margin-bottom:1.5rem}
+        .page-hero-content h1{font-family:'Ma Shan Zheng',cursive;font-size:clamp(2.5rem,6vw,5rem);color:var(--paper);margin-bottom:1rem}
+        .page-hero-content p{color:rgba(245,240,232,.5);font-size:1.1rem;max-width:600px;margin:0 auto;line-height:1.8}
+
+        /* ===== 通用区块标题 ===== */
+        .section-header{text-align:center;margin-bottom:4rem}
+        .section-header .label{display:inline-block;font-size:.8rem;letter-spacing:6px;color:var(--ink-light);border:1px solid rgba(0,0,0,.1);padding:.3rem 1.2rem;margin-bottom:1.5rem}
+        .section-header h2{font-family:'Ma Shan Zheng',cursive;font-size:clamp(2rem,4vw,3.5rem);margin-bottom:1rem}
+        .section-header .divider{width:60px;height:2px;background:var(--seal-red);margin:0 auto}
+
+        /* ===== 时间线 ===== */
+        .timeline-section{padding:6rem 2rem;position:relative}
+        .timeline-section::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:2px;height:100%;background:linear-gradient(to bottom,transparent,rgba(0,0,0,.1),rgba(0,0,0,.1),transparent)}
+        .timeline{max-width:1000px;margin:0 auto;position:relative}
+        .timeline-item{display:flex;margin-bottom:4rem;position:relative;opacity:0;transform:translateY(30px);transition:.6s}
+        .timeline-item.active{opacity:1;transform:translateY(0)}
+        .timeline-item:nth-child(odd){flex-direction:row}
+        .timeline-item:nth-child(even){flex-direction:row-reverse}
+        .timeline-dot{position:absolute;left:50%;top:1.5rem;transform:translateX(-50%);width:16px;height:16px;background:var(--seal-red);border-radius:50%;border:3px solid var(--paper);box-shadow:0 0 0 3px rgba(194,58,43,.3);z-index:2}
+        .timeline-content{width:45%;background:rgba(255,255,255,.7);border:1px solid rgba(0,0,0,.06);padding:2rem;transition:.4s}
+        .timeline-content:hover{transform:translateY(-3px);box-shadow:0 15px 40px rgba(0,0,0,.08)}
+        .timeline-content .year{display:inline-block;font-family:'Ma Shan Zheng',cursive;font-size:1.5rem;color:var(--seal-red);margin-bottom:.5rem}
+        .timeline-content h3{font-family:'Ma Shan Zheng',cursive;font-size:1.3rem;margin-bottom:.8rem;color:var(--ink-dark)}
+        .timeline-content p{font-size:.9rem;line-height:1.9;color:var(--ink-gray)}
+        .timeline-content .tag{display:inline-block;margin-top:1rem;padding:.2rem .8rem;font-size:.75rem;border:1px solid rgba(0,0,0,.1);color:var(--ink-light);letter-spacing:2px}
+
+        /* ===== 人格魅力 ===== */
+        .character-section{padding:6rem 2rem;background:var(--ink-black)}
+        .char-grid{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:2rem}
+        .char-card{background:rgba(245,240,232,.05);border:1px solid rgba(245,240,232,.08);padding:2.5rem 2rem;transition:.5s;position:relative;overflow:hidden}
+        .char-card::after{content:'';position:absolute;bottom:0;left:0;width:0;height:3px;background:var(--seal-red);transition:width .5s}
+        .char-card:hover::after{width:100%}
+        .char-card:hover{background:rgba(245,240,232,.08);transform:translateY(-5px)}
+        .char-card .card-icon{font-size:2.5rem;margin-bottom:1.5rem}
+        .char-card h3{font-family:'Ma Shan Zheng',cursive;font-size:1.5rem;color:var(--paper);margin-bottom:1rem}
+        .char-card p{font-size:.9rem;line-height:1.9;color:rgba(245,240,232,.6)}
+        .char-card .quote{margin-top:1.2rem;padding:1rem;border-left:2px solid var(--seal-red);font-style:italic;color:rgba(245,240,232,.5);font-size:.85rem}
+
+        /* ===== 页脚 ===== */
+        footer{background:var(--ink-black);border-top:1px solid rgba(245,240,232,.08);padding:3rem 2rem;text-align:center}
+        footer p{color:rgba(245,240,232,.3);font-size:.8rem;letter-spacing:2px}
+        footer .seal-footer{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border:2px solid rgba(194,58,43,.4);color:rgba(194,58,43,.6);font-family:'Ma Shan Zheng',cursive;font-size:1.2rem;margin-bottom:1rem}
+
+        @media(max-width:768px){
+            .hamburger{display:flex}
+            nav ul{position:fixed;top:0;right:-100%;width:70%;height:100vh;background:rgba(26,26,26,.98);flex-direction:column;padding:5rem 2rem;transition:right .4s;gap:.5rem}
+            nav ul.open{right:0}
+            .timeline-section::before{left:2rem}
+            .timeline-item,.timeline-item:nth-child(even){flex-direction:column;align-items:flex-start;padding-left:3.5rem}
+            .timeline-dot{left:2rem}
+            .timeline-content{width:100%}
+            .char-grid{grid-template-columns:1fr}
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-inner">
+        <a href="index5.html" class="logo"><span class="seal-sm">蘇</span>词学研习</a>
+        <div class="hamburger" onclick="document.getElementById('nav-menu').classList.toggle('open')"><span></span><span></span><span></span></div>
+        <ul id="nav-menu">
+            <li><a href="index5.html">首页</a></li>
+            <li><a href="biography5.html" class="active">苏轼生平</a></li>
+            <li><a href="analysis5.html">词作解析</a></li>
+            <li><a href="knowledge5.html">知识拓扑</a></li>
+            <li><a href="quiz5.html">课后练习</a></li>
+            <li><a href="summary5.html">回顾总结</a></li>
+        </ul>
+    </div>
+</nav>
+
+<section class="page-hero">
+    <div class="page-hero-content">
+        <span class="label">人 · 物 · 传 · 记</span>
+        <h1>苏轼传</h1>
+        <p>一蓑烟雨任平生，也无风雨也无晴。<br>走进千年前那个旷达洒脱的灵魂。</p>
+    </div>
+</section>
+
+<section class="timeline-section">
+    <div class="section-header">
+        <span class="label">生 · 平 · 年 · 表</span>
+        <h2>浮生如梦</h2>
+        <div class="divider"></div>
+    </div>
+    <div class="timeline">
+        <div class="timeline-item"><div class="timeline-dot"></div>
+            <div class="timeline-content"><span class="year">1037年</span><h3>眉山降世</h3><p>苏轼生于四川眉山，字子瞻，号东坡居士。父苏洵，弟苏辙，三人并称"三苏"，同列"唐宋八大家"。少时便展现出非凡的文学天赋，博览群书。</p><span class="tag">少年时期</span></div>
+        </div>
+        <div class="timeline-item"><div class="timeline-dot"></div>
+            <div class="timeline-content"><span class="year">1057年</span><h3>科举高中</h3><p>年仅二十一岁的苏轼与弟苏辙同科进士及第。主考官欧阳修阅其文章，惊叹不已，感叹："此人可谓善读书，善用书，他日文章必独步天下。"</p><span class="tag">仕途初启</span></div>
+        </div>
+        <div class="timeline-item"><div class="timeline-dot"></div>
+            <div class="timeline-content"><span class="year">1071年</span><h3>外任杭州</h3><p>因与王安石政见不合，苏轼主动请求外调。先后任杭州通判、密州知州等职。虽远离权力中心，但他关心民生、勤政爱民，并写下大量经典诗词。</p><span class="tag">宦海浮沉</span></div>
+        </div>
+        <div class="timeline-item"><div class="timeline-dot"></div>
+            <div class="timeline-content"><span class="year">1075年</span><h3>密州出猎</h3><p>知密州期间，苏轼率众出猎，意气风发。写下千古名篇《江城子·密州出猎》。"老夫聊发少年狂"——开豪放词之先河。</p><span class="tag">词作诞生</span></div>
+        </div>
+        <div class="timeline-item"><div class="timeline-dot"></div>
+            <div class="timeline-content"><span class="year">1079年</span><h3>乌台诗案</h3><p>因诗文被诬讽刺新法，苏轼被捕入狱，史称"乌台诗案"。几近丧命，出狱后被贬黄州。这场文字狱成为他人生的重大转折点。</p><span class="tag">人生低谷</span></div>
+        </div>
+        <div class="timeline-item"><div class="timeline-dot"></div>
+            <div class="timeline-content"><span class="year">1080–1084年</span><h3>黄州岁月</h3><p>贬谪黄州期间，苏轼于东坡耕种，自号"东坡居士"。写下《赤壁赋》《念奴娇·赤壁怀古》等不朽名作。苦难成就了更深邃的哲思。</p><span class="tag">涅槃重生</span></div>
+        </div>
+        <div class="timeline-item"><div class="timeline-dot"></div>
+            <div class="timeline-content"><span class="year">1094–1100年</span><h3>再贬惠儋</h3><p>新党再度执政后，苏轼先贬惠州，再贬海南儋州。在蛮荒之地依然办学堂、行医济民、著书立说。"九死南荒吾不恨，兹游奇绝冠平生。"</p><span class="tag">晚年流放</span></div>
+        </div>
+        <div class="timeline-item"><div class="timeline-dot"></div>
+            <div class="timeline-content"><span class="year">1101年</span><h3>归途长逝</h3><p>获赦北归途中，苏轼病逝于常州，享年六十四岁。临终前留下"吾生无恶，死必不坠"之语。谥号"文忠"，后世尊为千古文豪。</p><span class="tag">一代文宗</span></div>
+        </div>
+    </div>
+</section>
+
+<section class="character-section">
+    <div class="section-header" style="margin-bottom:4rem">
+        <span class="label" style="color:rgba(245,240,232,.4);border-color:rgba(245,240,232,.15)">精 · 神 · 风 · 貌</span>
+        <h2 style="color:var(--paper)">东坡之魂</h2>
+        <div class="divider"></div>
+    </div>
+    <div class="char-grid">
+        <div class="char-card">
+            <div class="card-icon">🏹</div>
+            <h3>豪放旷达</h3>
+            <p>苏轼一生数次贬谪，却始终不失旷达之气。他在密州出猎时的豪迈，在黄州赤壁的超然，无不彰显其"一蓑烟雨任平生"的人生境界。</p>
+            <div class="quote">"竹杖芒鞋轻胜马，谁怕？一蓑烟雨任平生。"</div>
+        </div>
+        <div class="char-card">
+            <div class="card-icon">🎨</div>
+            <h3>全才天赋</h3>
+            <p>诗、词、文、书、画无所不精。他开创豪放词派，与辛弃疾并称"苏辛"；散文位列"唐宋八大家"；书法名列"宋四家"之首。</p>
+            <div class="quote">"退笔如山未足珍，读书万卷始通神。"</div>
+        </div>
+        <div class="char-card">
+            <div class="card-icon">❤️</div>
+            <h3>忧国忧民</h3>
+            <p>无论身居庙堂还是谪居荒野，苏轼始终心系百姓。他治理水患、赈济灾民、兴修水利，在《江城子·密州出猎》中直抒"西北望，射天狼"的报国豪情。</p>
+            <div class="quote">"会挽雕弓如满月，西北望，射天狼。"</div>
+        </div>
+        <div class="char-card">
+            <div class="card-icon">🍵</div>
+            <h3>生活美学</h3>
+            <p>苏轼是中国历史上最懂生活的文人。他发明东坡肉、东坡饼，精于品茶，善酿美酒。即便在最困苦的日子里，也能把日子过成诗。</p>
+            <div class="quote">"人间有味是清欢。"</div>
+        </div>
+        <div class="char-card">
+            <div class="card-icon">🧘</div>
+            <h3>儒释道融通</h3>
+            <p>苏轼以儒家入世治国，以佛道出世养心。三教融通使他在逆境中拥有了超凡的精神韧性，"也无风雨也无晴"便是这种通达的极致表达。</p>
+            <div class="quote">"回首向来萧瑟处，归去，也无风雨也无晴。"</div>
+        </div>
+        <div class="char-card">
+            <div class="card-icon">🤝</div>
+            <h3>重情重义</h3>
+            <p>苏轼与弟苏辙一生情深；悼念亡妻王弗的《江城子·乙卯正月二十日夜记梦》催人泪下；对友人更是肝胆相照，真性情令后世敬仰。</p>
+            <div class="quote">"十年生死两茫茫，不思量，自难忘。"</div>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <div class="seal-footer">蘇</div>
+    <p>江城子 · 密州出猎 — 词学研习网站</p>
+    <p style="margin-top:.5rem;opacity:.5">以墨为魂，以词为骨</p>
+</footer>
+
+<script>
+const items=document.querySelectorAll('.timeline-item');
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('active')})},{threshold:.2});
+items.forEach(i=>obs.observe(i));
+</script>
+</body>
+</html>

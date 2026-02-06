@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>词作解析 — 江城子·密州出猎</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200;300;400;500;600;700;900&family=Ma+Shan+Zheng&display=swap');
+        :root{--ink-black:#1a1a1a;--ink-dark:#2c2c2c;--ink-gray:#555;--ink-light:#888;--paper:#f5f0e8;--seal-red:#c23a2b}
+        *{margin:0;padding:0;box-sizing:border-box}
+        html{scroll-behavior:smooth}
+        body{font-family:'Noto Serif SC',serif;background:var(--paper);color:var(--ink-black);overflow-x:hidden}
+
+        nav{position:fixed;top:0;left:0;width:100%;z-index:9000;background:rgba(26,26,26,.95);backdrop-filter:blur(15px);box-shadow:0 2px 30px rgba(0,0,0,.3);padding:.6rem 0}
+        nav .nav-inner{max-width:1400px;margin:0 auto;padding:0 2rem;display:flex;align-items:center;justify-content:space-between}
+        nav .logo{font-family:'Ma Shan Zheng',cursive;font-size:1.6rem;color:var(--paper);text-decoration:none;display:flex;align-items:center;gap:.5rem}
+        nav .logo .seal-sm{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border:2px solid var(--seal-red);color:var(--seal-red);font-size:.9rem}
+        nav ul{display:flex;list-style:none;gap:.3rem}
+        nav ul li a{color:rgba(245,240,232,.7);text-decoration:none;font-size:.9rem;padding:.5rem 1rem;border-radius:4px;transition:.3s;position:relative}
+        nav ul li a:hover,nav ul li a.active{color:var(--paper);background:rgba(245,240,232,.08)}
+        nav ul li a.active::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:20px;height:2px;background:var(--seal-red)}
+        .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer}
+        .hamburger span{width:25px;height:2px;background:var(--paper);transition:.3s}
+
+        .page-hero{min-height:60vh;display:flex;align-items:center;justify-content:center;background:var(--ink-black);position:relative;overflow:hidden;text-align:center}
+        .page-hero::before{content:'析';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Ma Shan Zheng',cursive;font-size:40vw;color:rgba(245,240,232,.02);pointer-events:none}
+        .page-hero-content{position:relative;z-index:1;padding:2rem}
+        .page-hero-content .label{display:inline-block;font-size:.8rem;letter-spacing:6px;color:rgba(245,240,232,.4);border:1px solid rgba(245,240,232,.15);padding:.3rem 1.2rem;margin-bottom:1.5rem}
+        .page-hero-content h1{font-family:'Ma Shan Zheng',cursive;font-size:clamp(2.5rem,6vw,5rem);color:var(--paper);margin-bottom:1rem}
+        .page-hero-content p{color:rgba(245,240,232,.5);font-size:1.1rem;max-width:600px;margin:0 auto;line-height:1.8}
+
+        .section-header{text-align:center;margin-bottom:4rem}
+        .section-header .label{display:inline-block;font-size:.8rem;letter-spacing:6px;color:var(--ink-light);border:1px solid rgba(0,0,0,.1);padding:.3rem 1.2rem;margin-bottom:1.5rem}
+        .section-header h2{font-family:'Ma Shan Zheng',cursive;font-size:clamp(2rem,4vw,3.5rem);margin-bottom:1rem}
+        .section-header .divider{width:60px;height:2px;background:var(--seal-red);margin:0 auto}
+
+        /* ===== 写作背景 ===== */
+        .bg-section{padding:6rem 2rem;max-width:900px;margin:0 auto}
+        .bg-section .bg-card{background:rgba(255,255,255,.6);border:1px solid rgba(0,0,0,.06);padding:3rem;position:relative}
+        .bg-section .bg-card::before{content:'背景';position:absolute;top:-1rem;left:2rem;background:var(--seal-red);color:#fff;padding:.3rem 1rem;font-size:.8rem;letter-spacing:3px}
+        .bg-section .bg-card p{font-size:1rem;line-height:2.2;color:var(--ink-gray);margin-bottom:1rem}
+        .bg-section .bg-card p:last-child{margin-bottom:0}
+
+        /* ===== 逐句解析 ===== */
+        .analysis-section{padding:6rem 2rem;background:var(--ink-black)}
+        .analysis-container{max-width:1000px;margin:0 auto}
+
+        .analysis-block{margin-bottom:3rem;border:1px solid rgba(245,240,232,.06);background:rgba(245,240,232,.03);overflow:hidden;transition:.4s}
+        .analysis-block:hover{border-color:rgba(245,240,232,.12)}
+
+        .analysis-block .sentence-bar{display:flex;align-items:center;justify-content:space-between;padding:1.5rem 2rem;cursor:pointer;transition:.3s}
+        .analysis-block .sentence-bar:hover{background:rgba(245,240,232,.05)}
+        .analysis-block .sentence-bar .num{font-family:'Ma Shan Zheng',cursive;font-size:2rem;color:var(--seal-red);min-width:50px}
+        .analysis-block .sentence-bar .text{flex:1;font-size:1.2rem;color:var(--paper);letter-spacing:2px}
+        .analysis-block .sentence-bar .toggle{color:rgba(245,240,232,.4);font-size:1.5rem;transition:transform .3s}
+        .analysis-block.open .sentence-bar .toggle{transform:rotate(45deg)}
+
+        .analysis-block .detail{max-height:0;overflow:hidden;transition:max-height .5s ease}
+        .analysis-block.open .detail{max-height:800px}
+        .analysis-block .detail-inner{padding:0 2rem 2rem;border-top:1px solid rgba(245,240,232,.06)}
+
+        .detail-inner .row{display:flex;gap:2rem;margin-top:1.5rem;flex-wrap:wrap}
+        .detail-inner .col{flex:1;min-width:250px}
+        .detail-inner .col h4{font-family:'Ma Shan Zheng',cursive;font-size:1.1rem;color:rgba(245,240,232,.8);margin-bottom:.8rem;display:flex;align-items:center;gap:.5rem}
+        .detail-inner .col h4 .dot{width:6px;height:6px;background:var(--seal-red);border-radius:50%}
+        .detail-inner .col p{font-size:.88rem;line-height:1.9;color:rgba(245,240,232,.55)}
+        .detail-inner .col .keyword{display:inline-block;padding:.15rem .6rem;margin:.2rem;border:1px solid rgba(194,58,43,.3);color:rgba(194,58,43,.8);font-size:.8rem;border-radius:2px}
+
+        /* ===== 主题总结 ===== */
+        .theme-section{padding:6rem 2rem}
+        .theme-grid{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:2rem}
+        .theme-card{background:rgba(255,255,255,.6);border:1px solid rgba(0,0,0,.06);padding:2.5rem 2rem;text-align:center;transition:.5s;position:relative;overflow:hidden}
+        .theme-card::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:40px;height:3px;background:var(--seal-red)}
+        .theme-card:hover{transform:translateY(-5px);box-shadow:0 20px 50px rgba(0,0,0,.08)}
+        .theme-card .icon{font-size:2.5rem;margin-bottom:1.5rem}
+        .theme-card h3{font-family:'Ma Shan Zheng',cursive;font-size:1.4rem;margin-bottom:1rem}
+        .theme-card p{font-size:.88rem;line-height:1.9;color:var(--ink-gray)}
+
+        footer{background:var(--ink-black);border-top:1px solid rgba(245,240,232,.08);padding:3rem 2rem;text-align:center}
+        footer p{color:rgba(245,240,232,.3);font-size:.8rem;letter-spacing:2px}
+        footer .seal-footer{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border:2px solid rgba(194,58,43,.4);color:rgba(194,58,43,.6);font-family:'Ma Shan Zheng',cursive;font-size:1.2rem;margin-bottom:1rem}
+
+        @media(max-width:768px){
+            .hamburger{display:flex}
+            nav ul{position:fixed;top:0;right:-100%;width:70%;height:100vh;background:rgba(26,26,26,.98);flex-direction:column;padding:5rem 2rem;transition:right .4s;gap:.5rem}
+            nav ul.open{right:0}
+            .detail-inner .row{flex-direction:column}
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-inner">
+        <a href="index5.html" class="logo"><span class="seal-sm">蘇</span>词学研习</a>
+        <div class="hamburger" onclick="document.getElementById('nav-menu').classList.toggle('open')"><span></span><span></span><span></span></div>
+        <ul id="nav-menu">
+            <li><a href="index5.html">首页</a></li>
+            <li><a href="biography5.html">苏轼生平</a></li>
+            <li><a href="analysis5.html" class="active">词作解析</a></li>
+            <li><a href="knowledge5.html">知识拓扑</a></li>
+            <li><a href="quiz5.html">课后练习</a></li>
+            <li><a href="summary5.html">回顾总结</a></li>
+        </ul>
+    </div>
+</nav>
+
+<section class="page-hero">
+    <div class="page-hero-content">
+        <span class="label">词 · 作 · 解 · 析</span>
+        <h1>逐句品鉴</h1>
+        <p>一字一句，走进词人的精神世界。<br>点击每一句，展开深层解读。</p>
+    </div>
+</section>
+
+<!-- 写作背景 -->
+<section class="bg-section">
+    <div class="section-header">
+        <span class="label">创 · 作 · 背 · 景</span>
+        <h2>词出何因</h2>
+        <div class="divider"></div>
+    </div>
+    <div class="bg-card">
+        <p>宋神宗熙宁八年（1075年），苏轼时任密州（今山东诸城）知州，年方四十。此时的苏轼因反对王安石变法而自请外调，远离朝廷中心，内心却仍怀报国壮志。</p>
+        <p>是年十月，苏轼于密州常山率众出猎。他被围猎的壮阔场面深深激荡，平日蕴积的豪情壮志一泻千里，遂写下这首被后世称为"豪放词开山之作"的《江城子·密州出猎》。</p>
+        <p>苏轼在给好友鲜于子骏的信中曾说："近却颇作小词，虽无柳七郎风味，亦自是一家。数日前猎于郊外，所获颇多。作得一阙，令东州壮士抵掌顿足而歌之，吹笛击鼓以为节，颇壮观也。"可见他对这首词的自信与自豪。</p>
+    </div>
+</section>
+
+<!-- 逐句解析 -->
+<section class="analysis-section">
+    <div class="section-header" style="margin-bottom:4rem">
+        <span class="label" style="color:rgba(245,240,232,.4);border-color:rgba(245,240,232,.15)">逐 · 句 · 解 · 析</span>
+        <h2 style="color:var(--paper)">字字珠玑</h2>
+        <div class="divider"></div>
+    </div>
+
+    <div class="analysis-container">
+        <!-- 句1 -->
+        <div class="analysis-block">
+            <div class="sentence-bar" onclick="toggleBlock(this)">
+                <span class="num">壹</span>
+                <span class="text">老夫聊发少年狂，左牵黄，右擎苍。</span>
+                <span class="toggle">+</span>
+            </div>
+            <div class="detail"><div class="detail-inner">
+                <div class="row">
+                    <div class="col">
+                        <h4><span class="dot"></span>词句注释</h4>
+                        <p><strong>老夫</strong>：苏轼自称，年四十岁。<strong>聊</strong>：姑且、暂且。<strong>少年狂</strong>：年轻人的豪情壮志。<strong>黄</strong>：黄犬。<strong>苍</strong>：苍鹰。"左牵黄，右擎苍"描绘出猎时左手牵着猎犬、右臂托着苍鹰的飒爽英姿。</p>
+                    </div>
+                    <div class="col">
+                        <h4><span class="dot"></span>深层解读</h4>
+                        <p>开篇一个<strong>"狂"</strong>字统领全词，奠定了全词豪放激昂的基调。"老夫"与"少年狂"形成强烈对比，既有自嘲，更有不服老的豪迈气概。年华已逝但壮心犹在，这正是苏轼人格力量的集中体现。</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <h4><span class="dot"></span>关键词</h4>
+                        <span class="keyword">狂</span><span class="keyword">自称老夫</span><span class="keyword">左牵黄右擎苍</span><span class="keyword">不服老</span>
+                    </div>
+                    <div class="col">
+                        <h4><span class="dot"></span>修辞手法</h4>
+                        <p>对比：老夫 vs 少年狂；对偶：左牵黄 / 右擎苍。以年老反衬豪情，使气势更加昂扬。</p>
+                    </div>
+                </div>
+            </div></div>
+        </div>
+
+        <!-- 句2 -->
+        <div class="analysis-block">
+            <div class="sentence-bar" onclick="toggleBlock(this)">
+                <span class="num">贰</span>
+                <span class="text">锦帽貂裘，千骑卷平冈。</span>
+                <span class="toggle">+</span>
+            </div>
+            <div class="detail"><div class="detail-inner">
+                <div class="row">
+                    <div class="col">
+                        <h4><span class="dot"></span>词句注释</h4>
+                        <p><strong>锦帽貂裘</strong>：头戴锦缎帽子，身穿貂皮大衣，形容猎装的华美。<strong>千骑</strong>：形容随行的骑手众多。<strong>卷平冈</strong>：席卷平坦的山冈，极言气势之壮。</p>
+                    </div>
+                    <div class="col">
+                        <h4><span class="dot"></span>深层解读</h4>
+                        <p>一个<strong>"卷"</strong>字精妙传神，写出千骑奔驰、尘土飞扬的壮阔场面。这不仅是写实的出猎场景，更是苏轼内心渴望建功立业的精神写照。盛大的排场暗示了他虽居地方却不甘沉沦的心志。</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <h4><span class="dot"></span>关键词</h4>
+                        <span class="keyword">卷</span><span class="keyword">千骑</span><span class="keyword">壮阔场面</span><span class="keyword">气势磅礴</span>
+                    </div>
+                    <div class="col">
+                        <h4><span class="dot"></span>修辞手法</h4>
+                        <p>夸张："千骑"渲染声势；炼字："卷"字化静为动，极富画面感和力量感。</p>
+                    </div>
+                </div>
+            </div></div>
+        </div>
+
+        <!-- 句3 -->
+        <div class="analysis-block">
+            <div class="sentence-bar" onclick="toggleBlock(this)">
+                <span class="num">叁</span>
+                <span class="text">为报倾城随太守，亲射虎，看孙郎。</span>
+                <span class="toggle">+</span>
+            </div>
+            <div class="detail"><div class="detail-inner">
+                <div class="row">
+                    <div class="col">
+                        <h4><span class="dot"></span>词句注释</h4>
+                        <p><strong>为报</strong>：为了报答。<strong>倾城</strong>：全城的人。<strong>太守</strong>：苏轼自指，时任密州知州。<strong>孙郎</strong>：孙权。《三国志》载孙权曾亲自射虎，骑马被虎抓伤，仍从容应对。</p>
+                    </div>
+                    <div class="col">
+                        <h4><span class="dot"></span>深层解读</h4>
+                        <p>苏轼以三国英雄<strong>孙权</strong>自喻，这种用典极为大胆。全城百姓追随太守出猎，既写出他深得民心，又写出他以英雄自许的豪气。"���射虎"三字掷地有声，是全词上阙的高潮。</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <h4><span class="dot"></span>关键词</h4>
+                        <span class="keyword">孙权自喻</span><span class="keyword">倾城随太守</span><span class="keyword">亲射虎</span><span class="keyword">英雄气概</span>
+                    </div>
+                    <div class="col">
+                        <h4><span class="dot"></span>修辞手法</h4>
+                        <p>用典：以孙权射虎之事自比；夸张："倾城随太守"渲染出猎盛况。</p>
+                    </div>
+                </div>
+            </div></div>
+        </div>
+
+        <!-- 句4 -->
+        <div class="analysis-block">
+            <div class="sentence-bar" onclick="toggleBlock(this)">
+                <span class="num">肆</span>
+                <span class="text">酒酣胸胆尚开张。鬓微霜，又何妨！</span>
+                <span class="toggle">+</span>
+            </div>
+            <div class="detail"><div class="detail-inner">
+                <div class="row">
+                    <div class="col">
+                        <h4><span class="dot"></span>词句注释</h4>
+                        <p><strong>酒酣</strong>：饮酒至酣畅淋漓。<strong>胸胆开张</strong>：胸怀宽阔、胆气豪壮。<strong>鬓微霜</strong>：鬓角微白，暗示年岁已大。<strong>又何妨</strong>：反问语气，表达不以为意。</p>
+                    </div>
+                    <div class="col">
+                        <h4><span class="dot"></span>深层解读</h4>
+                        <p>下阙转入抒情言志。酒酣之后更见真性情，<strong>"又何妨"</strong>三字铿锵有力，是对岁月流逝的藐视，更是对自我价值的坚定肯定。全句承上启下，既呼应上阙的"少年狂"，又为下文的报国壮志做铺垫。</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <h4><span class="dot"></span>关键词</h4>
+                        <span class="keyword">又何妨</span><span class="keyword">壮心不已</span><span class="keyword">鬓微霜</span><span class="keyword">承上启下</span>
+                    </div>
+                    <div class="col">
+                        <h4><span class="dot"></span>修辞手法</h4>
+                        <p>反问："又何妨"以问代答，气势更足；对比：鬓霜（衰老）vs 胸胆开张（壮志），形成张力。</p>
+                    </div>
+                </div>
+            </div></div>
+        </div>
+
+        <!-- 句5 -->
+        <div class="analysis-block">
+            <div class="sentence-bar" onclick="toggleBlock(this)">
+                <span class="num">伍</span>
+                <span class="text">持节云中，何日遣冯唐？</span>
+                <span class="toggle">+</span>
+            </div>
+            <div class="detail"><div class="detail-inner">
+                <div class="row">
+                    <div class="col">
+                        <h4><span class="dot"></span>词句注释</h4>
+                        <p><strong>持节</strong>：持符节，代表皇帝的使命。<strong>云中</strong>：汉代边郡，此喻边疆。<strong>冯唐</strong>：汉文帝时，魏尚守边有功却因小过获罪，冯唐上书为其辩护，文帝遂派冯唐持节赦免并复用魏尚。</p>
+                    </div>
+                    <div class="col">
+                        <h4><span class="dot"></span>深层解读</h4>
+                        <p>苏轼以<strong>魏尚</strong>自喻——一位有功却被冷落的边将。"何日"二字满含期待与感慨，表达了他渴望被朝廷重新信任、委以重任的迫切心情。这是个人政治抱负最直接的表白。</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <h4><span class="dot"></span>关键词</h4>
+                        <span class="keyword">冯唐典故</span><span class="keyword">魏尚自喻</span><span class="keyword">渴望重用</span><span class="keyword">政治抱负</span>
+                    </div>
+                    <div class="col">
+                        <h4><span class="dot"></span>修辞手法</h4>
+                        <p>用典：冯唐持节赦魏尚；设问："何日"引人深思，委婉表达政治诉求。</p>
+                    </div>
+                </div>
+            </div></div>
+        </div>
+
+        <!-- 句6 -->
+        <div class="analysis-block">
+            <div class="sentence-bar" onclick="toggleBlock(this)">
+                <span class="num">陆</span>
+                <span class="text">会挽雕弓如满月，西北望，射天狼。</span>
+                <span class="toggle">+</span>
+            </div>
+            <div class="detail"><div class="detail-inner">
+                <div class="row">
+                    <div class="col">
+                        <h4><span class="dot"></span>词句注释</h4>
+                        <p><strong>会</strong>：终将，一定会。<strong>挽</strong>：拉满。<strong>雕弓</strong>：雕花的弓。<strong>天狼</strong>：天狼星，古人认为主侵掠之事，此喻西北边境的敌人（当时宋朝西北面临西夏的威胁）。</p>
+                    </div>
+                    <div class="col">
+                        <h4><span class="dot"></span>深层解读</h4>
+                        <p>全词的<strong>最高潮</strong>与主旨所在。从个人的出猎升华到保家卫国的宏愿。"如满月"的比喻既壮美又充满力量感。苏轼将个人的政治失意转化为对国家边防的忧虑和担当，把一己之情升华为家国之志，格局宏大，气势磅礴。</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <h4><span class="dot"></span>关键词</h4>
+                        <span class="keyword">射天狼</span><span class="keyword">家国情怀</span><span class="keyword">全词高潮</span><span class="keyword">豪放词风</span>
+                    </div>
+                    <div class="col">
+                        <h4><span class="dot"></span>修辞手法</h4>
+                        <p>比喻："雕弓如满月"；借代：天狼代指敌寇；升华：从出猎到报国，情感层层递进至最强音。</p>
+                    </div>
+                </div>
+            </div></div>
+        </div>
+    </div>
+</section>
+
+<!-- 主题归纳 -->
+<section class="theme-section">
+    <div class="section-header">
+        <span class="label">主 · 题 · 归 · 纳</span>
+        <h2>词中三境</h2>
+        <div class="divider"></div>
+    </div>
+    <div class="theme-grid">
+        <div class="theme-card">
+            <div class="icon">⚔️</div>
+            <h3>出猎之壮</h3>
+            <p>上阙以出猎为场景，"千骑卷平冈"的壮阔，"亲射虎，看孙郎"的英武，展现了一位太守不减当年的勇武豪情。这是词的表层——<strong>叙事</strong>。</p>
+        </div>
+        <div class="theme-card">
+            <div class="icon">🔥</div>
+            <h3>壮志之烈</h3>
+            <p>"酒酣胸胆尚开张"的豪迈及"持节云中"的期盼，直抒渴望被重新起用的政治抱负。这是词的中层——<strong>言志</strong>。</p>
+        </div>
+        <div class="theme-card">
+            <div class="icon">🌟</div>
+            <h3>家国之大</h3>
+            <p>"会挽雕弓如满月，西北望，射天狼"将个人豪情升华为保家卫国的宏愿。由己及国，格局宏大。这是词的深层——<strong>爱国</strong>。</p>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <div class="seal-footer">蘇</div>
+    <p>江城子 · 密州出猎 — 词学研习网站</p>
+    <p style="margin-top:.5rem;opacity:.5">以墨为魂，以词为骨</p>
+</footer>
+
+<script>
+function toggleBlock(bar){
+    const block=bar.parentElement;
+    block.classList.toggle('open');
+}
+</script>
+</body>
+</html>
