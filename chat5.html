@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知识问答 — 词学研习</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=Ma+Shan+Zheng&display=swap');
+
+        :root {
+            --bg: #FDF8F2;
+            --bg-alt: #F5F0E8;
+            --card: #FFFFFF;
+            --card-warm: #FFFCF8;
+            --green: #2C5545;
+            --green-light: rgba(44,85,69,.08);
+            --green-glow: rgba(44,85,69,.1);
+            --brown: #9E7B56;
+            --brown-light: rgba(158,123,86,.08);
+            --seal-red: #C23A2B;
+            --ink: #2A2A2A;
+            --ink2: #4A4A4A;
+            --ink3: #7A7A7A;
+            --ink4: #ADADAD;
+            --border: rgba(0,0,0,.06);
+            --shadow-sm: 0 2px 8px rgba(0,0,0,.03);
+            --shadow: 0 4px 12px rgba(0,0,0,.04);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,.06);
+            --radius: 16px;
+            --radius-sm: 12px;
+            --font-title: 'Noto Serif SC', '宋体', serif;
+            --font-body: 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+        html { scroll-behavior:smooth; }
+        body {
+            font-family: var(--font-body);
+            background: var(--bg);
+            color: var(--ink);
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+            position: relative;
+        }
+
+        /* ====== 背景纸纹 + 装饰 ====== */
+        body::before {
+            content: '';
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background:
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 28px,
+                    rgba(0,0,0,.008) 28px,
+                    rgba(0,0,0,.008) 29px
+                ),
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 28px,
+                    rgba(0,0,0,.005) 28px,
+                    rgba(0,0,0,.005) 29px
+                );
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* 水墨山峦 */
+        body::after {
+            content: '';
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 220px;
+            background:
+                linear-gradient(to top, rgba(44,85,69,.02), transparent 40%),
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='rgba(44,85,69,0.015)' d='M0,320L0,240Q80,160,200,200Q340,100,500,170Q650,60,800,140Q950,50,1100,130Q1250,80,1440,180L1440,320Z'/%3E%3Cpath fill='rgba(158,123,86,0.01)' d='M0,320L0,270Q120,200,280,240Q420,160,580,220Q720,130,880,200Q1040,120,1200,190Q1340,150,1440,220L1440,320Z'/%3E%3C/svg%3E") no-repeat bottom center / 100% auto;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* 竹叶纹 */
+        .bamboo-texture {
+            position: fixed; top: 0; right: 0; width: 300px; height: 100%;
+            opacity: .025;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='80' viewBox='0 0 60 80'%3E%3Cpath d='M30 5 Q35 20 30 40 Q25 20 30 5Z' fill='%232C5545'/%3E%3Cpath d='M35 25 Q50 30 55 25' stroke='%232C5545' fill='none' stroke-width='1'/%3E%3Cpath d='M25 30 Q10 35 5 30' stroke='%232C5545' fill='none' stroke-width='1'/%3E%3Cpath d='M30 45 Q35 60 30 80 Q25 60 30 45Z' fill='%232C5545'/%3E%3C/svg%3E") repeat;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ====== 导航 ====== */
+        nav {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 9000;
+            background: rgba(26,26,26,.95);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 2px 30px rgba(0,0,0,.3);
+            padding: .6rem 0;
+        }
+        .nav-inner {
+            max-width: 1400px; margin: 0 auto; padding: 0 2rem;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .logo {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 1.6rem;
+            color: #f5f0e8;
+            text-decoration: none;
+            display: flex; align-items: center; gap: .5rem;
+        }
+        .logo .seal-sm {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 32px; height: 32px;
+            border: 2px solid #c23a2b;
+            color: #c23a2b;
+            font-size: .9rem;
+            font-family: 'Ma Shan Zheng', cursive;
+        }
+        nav ul { display: flex; list-style: none; gap: .3rem; }
+        nav ul li a {
+            font-family: 'Noto Serif SC', serif;
+            color: rgba(245,240,232,.7);
+            text-decoration: none;
+            font-size: .9rem;
+            padding: .5rem 1rem;
+            border-radius: 4px;
+            transition: .3s;
+            position: relative;
+        }
+        nav ul li a:hover, nav ul li a.active {
+            color: #f5f0e8;
+            background: rgba(245,240,232,.08);
+        }
+        nav ul li a.active::after {
+            content: ''; position: absolute; bottom: 2px; left: 50%;
+            transform: translateX(-50%); width: 20px; height: 2px;
+            background: #c23a2b;
+        }
+        .hamburger {
+            display: none; flex-direction: column; gap: 5px;
+            cursor: pointer; z-index: 9999;
+        }
+        .hamburger span {
+            width: 25px; height: 2px; background: #f5f0e8; transition: .3s;
+        }
+        /* ====== 主体 ====== */
+        .main {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%; margin: 0 auto;
+            padding: 5rem 2rem 3rem;
+            position: relative; z-index: 1;
+        }
+
+        /* 页面标题 */
+        .page-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+        .page-header .title-group {
+            display: flex; align-items: center; gap: .8rem;
+        }
+        .page-header .title-bar {
+            width: 4px; height: 28px;
+            background: var(--seal-red);
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+        .page-header h1 {
+            font-family: var(--font-title);
+            font-size: 1.5rem; font-weight: 600;
+            color: var(--ink);
+        }
+        .page-header .stamp {
+            width: 52px; height: 52px;
+            border: 2px solid rgba(194,58,43,.2);
+            display: flex; align-items: center; justify-content: center;
+            font-family: var(--font-title);
+            font-size: 1.3rem; color: var(--seal-red);
+            opacity: .7;
+            transition: .3s;
+        }
+        .page-header .stamp:hover {
+            opacity: 1;
+            box-shadow: 0 0 12px rgba(194,58,43,.1);
+        }
+
+        /* ====== 两栏布局 ====== */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        /* ====== 左栏：对话区 ====== */
+        .chat-panel {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            display: flex; flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* 对话头部 */
+        .chat-head {
+            display: flex; align-items: center; gap: .7rem;
+            padding: 1rem 1.3rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--card-warm);
+        }
+        .chat-head .bot-avatar {
+            width: 38px; height: 38px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--green), #3a7a5f);
+            display: flex; align-items: center; justify-content: center;
+            font-family: var(--font-title);
+            font-size: 1rem; color: #fff;
+            flex-shrink: 0;
+        }
+        .chat-head .bot-info h3 {
+            font-family: var(--font-title);
+            font-size: .95rem; font-weight: 600; color: var(--ink);
+        }
+        .chat-head .bot-info p {
+            font-size: .72rem; color: var(--ink4);
+            display: flex; align-items: center; gap: .3rem;
+        }
+        .chat-head .bot-info .online {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: #5cb176;
+            display: inline-block;
+        }
+
+        /* 消息区 */
+        .chat-messages {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            padding: 1.2rem 1.3rem;
+            display: flex; flex-direction: column;
+            gap: 1rem;
+            scroll-behavior: smooth;
+            background: linear-gradient(180deg, var(--card) 0%, var(--card-warm) 100%);
+        }
+        .chat-messages::-webkit-scrollbar { width: 4px; }
+        .chat-messages::-webkit-scrollbar-track { background: transparent; }
+        .chat-messages::-webkit-scrollbar-thumb { background: rgba(0,0,0,.08); border-radius: 2px; }
+
+        /* 空状态 */
+        .empty-state {
+            flex: 1;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            gap: .6rem; padding: 2rem;
+        }
+        .empty-state .quote {
+            font-family: var(--font-title);
+            font-size: 1rem;
+            color: var(--ink4);
+            font-style: italic;
+            letter-spacing: 2px;
+        }
+        .empty-state .attr {
+            font-size: .75rem;
+            color: var(--ink4);
+            opacity: .6;
+        }
+
+        /* 单条消息 */
+        .msg {
+            display: flex; gap: .6rem;
+            max-width: 88%;
+            animation: fadeInUp .4s ease;
+        }
+        .msg.user { align-self: flex-end; flex-direction: row-reverse; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .msg .av {
+            width: 32px; height: 32px; border-radius: 50%;
+            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-family: var(--font-title);
+            font-size: .8rem;
+            margin-top: 2px;
+        }
+        .msg.bot .av {
+            background: linear-gradient(135deg, var(--green), #3a7a5f);
+            color: #fff;
+        }
+        .msg.user .av {
+            background: var(--bg-alt);
+            color: var(--ink3);
+            border: 1px solid var(--border);
+        }
+
+        .msg .bubble {
+            padding: .8rem 1rem;
+            font-size: .87rem;
+            line-height: 1.75;
+            border-radius: var(--radius-sm);
+            position: relative;
+        }
+        .msg.bot .bubble {
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--ink2);
+            border-top-left-radius: 4px;
+        }
+        .msg.user .bubble {
+            background: linear-gradient(135deg, var(--green), #35685a);
+            color: #fff;
+            border-top-right-radius: 4px;
+        }
+
+        /* 富文本 */
+        .bubble strong { font-weight: 600; }
+        .msg.bot .bubble strong { color: var(--ink); }
+        .bubble .hl {
+            display: block; margin: .5rem 0; padding: .5rem .8rem;
+            border-left: 3px solid var(--seal-red);
+            background: rgba(194,58,43,.03);
+            font-family: var(--font-title);
+            font-style: italic;
+            color: var(--ink3);
+            font-size: .83rem;
+            line-height: 1.7;
+            border-radius: 0 8px 8px 0;
+        }
+        .bubble .tag {
+            display: inline-block;
+            padding: .12rem .45rem; margin: .1rem .15rem;
+            border-radius: 20px;
+            font-size: .7rem; font-weight: 500;
+            letter-spacing: .3px;
+        }
+        .bubble .tag.g { background: var(--green-light); color: var(--green); }
+        .bubble .tag.b { background: var(--brown-light); color: var(--brown); }
+        .bubble .tag.r { background: rgba(194,58,43,.06); color: var(--seal-red); }
+
+        /* 打字指示器 */
+        .typing-row {
+            display: none; gap: .6rem;
+            max-width: 88%;
+            animation: fadeInUp .3s ease;
+        }
+        .typing-row.show { display: flex; }
+        .typing-row .av {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--green), #3a7a5f);
+            display: flex; align-items: center; justify-content: center;
+            font-family: var(--font-title);
+            font-size: .8rem; color: #fff;
+            flex-shrink: 0; margin-top: 2px;
+        }
+        .typing-dots {
+            display: flex; align-items: center; gap: .35rem;
+            padding: .8rem 1.1rem;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            border-top-left-radius: 4px;
+        }
+        .typing-dots span {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--ink4);
+            animation: dotBounce 1.4s ease-in-out infinite;
+        }
+        .typing-dots span:nth-child(2) { animation-delay: .2s; }
+        .typing-dots span:nth-child(3) { animation-delay: .4s; }
+        @keyframes dotBounce {
+            0%,60%,100% { transform: translateY(0); opacity: .3; }
+            30% { transform: translateY(-6px); opacity: .8; }
+        }
+
+        /* 输入区 */
+        .chat-input {
+            display: flex; align-items: flex-end; gap: .6rem;
+            padding: 1rem 1.3rem;
+            border-top: 1px solid var(--border);
+            background: var(--card);
+        }
+        .chat-input textarea {
+            flex: 1;
+            font-family: var(--font-body);
+            font-size: .88rem;
+            line-height: 1.5;
+            color: var(--ink);
+            background: var(--bg);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            padding: .65rem 1rem;
+            resize: none;
+            min-height: 42px;
+            max-height: 100px;
+            outline: none;
+            transition: all .3s;
+        }
+        .chat-input textarea::placeholder {
+            color: var(--ink4);
+        }
+        .chat-input textarea:focus {
+            border-color: rgba(44,85,69,.3);
+            box-shadow: 0 0 0 4px var(--green-glow);
+        }
+
+        .btn-send {
+            width: 42px; height: 42px;
+            border: none; border-radius: var(--radius);
+            background: var(--green);
+            color: #fff;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all .25s;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(44,85,69,.2);
+        }
+        .btn-send:hover {
+            background: #234a3a;
+            transform: scale(1.02);
+            box-shadow: 0 4px 14px rgba(44,85,69,.25);
+        }
+        .btn-send:active { transform: scale(.97); }
+        .btn-send:disabled {
+            background: var(--bg-alt);
+            color: var(--ink4);
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+        /* 毛笔图标 */
+        .btn-send svg { width: 20px; height: 20px; fill: currentColor; }
+
+        /* ====== 右栏：推荐区 ====== */
+        .side-panel {
+            display: flex; flex-direction: column; gap: 1rem;
+        }
+        .side-panel > :last-child {
+            flex: 1;
+        }
+        .side-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.2rem;
+        }
+        .side-card .side-title {
+            font-family: var(--font-title);
+            font-size: .95rem; font-weight: 600;
+            color: var(--ink);
+            margin-bottom: .8rem;
+            display: flex; align-items: center; gap: .5rem;
+        }
+        .side-card .side-title .icon {
+            font-size: 1rem;
+        }
+
+        .suggest-list {
+            display: flex; flex-direction: column; gap: .5rem;
+        }
+        .suggest-item {
+            display: flex; align-items: flex-start; gap: .6rem;
+            padding: .7rem .8rem;
+            background: var(--bg);
+            border: 1px solid transparent;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all .3s;
+            font-size: .82rem;
+            color: var(--ink2);
+            line-height: 1.55;
+        }
+        .suggest-item:hover {
+            background: var(--card);
+            border-color: rgba(44,85,69,.15);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+        .suggest-item:active { transform: translateY(0); }
+        .suggest-item .si-icon {
+            font-size: .95rem;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .suggest-item .si-text { flex: 1; }
+
+        /* 小知识卡片 */
+        .trivia-card {
+            background: linear-gradient(135deg, rgba(44,85,69,.04), rgba(158,123,86,.03));
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+        }
+        .trivia-card .trivia-title {
+            font-family: var(--font-title);
+            font-size: .85rem; font-weight: 600;
+            color: var(--brown);
+            margin-bottom: .5rem;
+            display: flex; align-items: center; gap: .4rem;
+        }
+        .trivia-card .trivia-text {
+            font-family: var(--font-title);
+            font-size: .82rem;
+            color: var(--ink3);
+            line-height: 1.7;
+            font-style: italic;
+        }
+        .trivia-card .trivia-attr {
+            text-align: right;
+            font-size: .72rem;
+            color: var(--ink4);
+            margin-top: .4rem;
+        }
+
+        /* ====== 页脚 ====== */
+        footer {
+            background: #1a1a1a;
+            border-top: 1px solid rgba(245,240,232,.08);
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative; z-index: 1;
+        }
+        footer p {
+            color: rgba(245,240,232,.3);
+            font-family: 'Noto Serif SC', serif;
+            font-size: .8rem;
+            letter-spacing: 2px;
+        }
+        footer .seal-footer {
+            display: inline-flex;
+            align-items: center; justify-content: center;
+            width: 40px; height: 40px;
+            border: 2px solid rgba(194,58,43,.4);
+            color: rgba(194,58,43,.6);
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        /* ====== 响应式 ====== */
+        @media (max-width: 900px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            .side-panel {
+                position: static;
+                /* 横向滚动推荐 */
+            }
+            .side-panel .side-card { display: none; }
+            .side-panel .side-card:first-child {
+                display: block;
+            }
+            .side-panel .side-card:first-child .suggest-list {
+                flex-direction: row;
+                overflow-x: auto;
+                gap: .5rem;
+                padding-bottom: .3rem;
+            }
+            .side-panel .side-card:first-child .suggest-item {
+                min-width: 200px;
+                flex-shrink: 0;
+            }
+            .chat-messages { height: 360px; }
+        }
+
+        @media (max-width: 640px) {
+            .nav-inner { padding: 0 1rem; }
+            .hamburger { display: flex; }
+            nav ul {
+                position: fixed; top: 0; right: -100%; width: 70%; height: 100vh;
+                background: rgba(26,26,26,.98);
+                flex-direction: column; padding: 5rem 2rem;
+                transition: right .4s; gap: .5rem;
+            }
+            nav ul.open { right: 0; }
+            .main { padding: 1.2rem 1rem 2rem; }
+            .page-header .stamp { display: none; }
+            .chat-messages { height: 320px; }
+            .msg { max-width: 92%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="bamboo-texture"></div>
+
+<!-- 导航 -->
+
+<nav>
+    <div class="nav-inner">
+        <a href="index5.html" class="logo"><span class="seal-sm">蘇</span>词学研习</a>
+        <div class="hamburger" onclick="document.getElementById('navMenu').classList.toggle('open')"><span></span><span></span><span></span></div>
+        <ul id="navMenu">
+            <li><a href="index5.html">首页</a></li>
+            <li><a href="biography5.html">苏轼生平</a></li>
+            <li><a href="analysis5.html">词作解析</a></li>
+            <li><a href="knowledge5.html">知识拓扑</a></li>
+            <li><a href="quiz5.html">课后练习</a></li>
+            <li><a href="chat5.html" class="active">知识问答</a></li>
+            <li><a href="summary5.html">回顾总结</a></li>
+        </ul>
+    </div>
+</nav>
+
+<!-- 主体 -->
+<div class="main">
+    <!-- 标题 -->
+    <div class="page-header">
+        <div class="title-group">
+            <div class="title-bar"></div>
+            <h1>知识问答</h1>
+        </div>
+        <div class="stamp">問</div>
+    </div>
+
+    <!-- 两栏 -->
+    <div class="content-grid">
+
+        <!-- 左栏：对话 -->
+        <div class="chat-panel">
+            <div class="chat-head">
+                <div class="bot-avatar">蘇</div>
+                <div class="bot-info">
+                    <h3>东坡问答助手</h3>
+                    <p><span class="online"></span>在线 · 随时为你解答</p>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <!-- 消息动态插入 -->
+            </div>
+
+            <div class="typing-row" id="typingRow">
+                <div class="av">蘇</div>
+                <div class="typing-dots"><span></span><span></span><span></span></div>
+            </div>
+
+            <div class="chat-input">
+                <textarea id="userInput" rows="1" placeholder="输入你关于苏轼的问题…" onkeydown="handleKey(event)"></textarea>
+                <button class="btn-send" id="sendBtn" onclick="send()" title="发送">
+                    <!-- 毛笔图标 -->
+                    <svg viewBox="0 0 24 24"><path d="M21.47 2.52a1 1 0 0 0-1.08-.21L3.19 9.16a1 1 0 0 0-.07 1.81l6.4 3.38 3.38 6.4a1 1 0 0 0 .88.53h.05a1 1 0 0 0 .87-.61l6.86-17.08a1 1 0 0 0-.21-1.07ZM11.54 14.05l-4.36-2.3 10.43-4.54Zm1.42 1.42l-2.3-4.36 6.84-6.84Z"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- 右栏：辅助 -->
+        <div class="side-panel">
+            <!-- 推荐问题 -->
+            <div class="side-card">
+                <div class="side-title"><span class="icon">💡</span>猜你想问</div>
+                <div class="suggest-list">
+                    <div class="suggest-item" onclick="askQ(this)">
+                        <span class="si-icon">📜</span>
+                        <span class="si-text">《江城子·密州出猎》的创作背景是什么？</span>
+                    </div>
+                    <div class="suggest-item" onclick="askQ(this)">
+                        <span class="si-icon">🖊️</span>
+                        <span class="si-text">"老夫聊发少年狂"中的"狂"字妙在哪里？</span>
+                    </div>
+                    <div class="suggest-item" onclick="askQ(this)">
+                        <span class="si-icon">📖</span>
+                        <span class="si-text">词中引用了哪些历史典故？</span>
+                    </div>
+                    <div class="suggest-item" onclick="askQ(this)">
+                        <span class="si-icon">⚔️</span>
+                        <span class="si-text">苏轼的豪放词风有什么特点？</span>
+                    </div>
+                    <div class="suggest-item" onclick="askQ(this)">
+                        <span class="si-icon">🏔️</span>
+                        <span class="si-text">苏轼一生经历了哪些重大挫折？</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 小知识 -->
+            <div class="trivia-card">
+                <div class="trivia-title">📝 东坡妙语</div>
+                <p class="trivia-text" id="triviaText">"竹杖芒鞋轻胜马，谁怕？一蓑烟雨任平生。"</p>
+                <p class="trivia-attr" id="triviaAttr">—— 苏轼《定风波》</p>
+            </div>
+
+            <!-- 快捷标签 -->
+            <div class="side-card">
+                <div class="side-title"><span class="icon">🏷️</span>热门话题</div>
+                <div style="display:flex;flex-wrap:wrap;gap:.4rem;">
+                    <span class="tag-btn" onclick="sendDirect('什么是乌台诗案？')">乌台诗案</span>
+                    <span class="tag-btn" onclick="sendDirect('介绍一下三苏')">三苏</span>
+                    <span class="tag-btn" onclick="sendDirect('射天狼是什么意思？')">射天狼</span>
+                    <span class="tag-btn" onclick="sendDirect('苏轼有哪些文学成就？')">文学成就</span>
+                    <span class="tag-btn" onclick="sendDirect('《水调歌头》的内容是什么？')">水调歌头</span>
+                    <span class="tag-btn" onclick="sendDirect('赤壁赋讲了什么？')">赤壁赋</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<footer>
+    <div class="seal-footer">蘇</div>
+    <p>江城子 · 密州出猎 — 词学研习网站</p>
+    <p style="margin-top:.5rem;opacity:.5">以墨为魂，以词为骨</p>
+</footer>
+
+<style>
+    /* 热门话题标签 */
+    .tag-btn {
+        display: inline-block;
+        padding: .35rem .7rem;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        font-size: .75rem;
+        color: var(--ink3);
+        cursor: pointer;
+        transition: all .25s;
+        font-family: var(--font-body);
+    }
+    .tag-btn:hover {
+        background: var(--green-light);
+        color: var(--green);
+        border-color: rgba(44,85,69,.2);
+        transform: translateY(-1px);
+    }
+</style>
+
+<script>
+/* ====== 左右栏等高：以右栏高度为准 ====== */
+window.addEventListener('DOMContentLoaded', () => {
+    const sidePanel = document.querySelector('.side-panel');
+    const chatPanel = document.querySelector('.chat-panel');
+    const h = sidePanel.offsetHeight;
+    chatPanel.style.height = h + 'px';
+});
+/* ====== textarea 自动高度 ====== */
+const ta = document.getElementById('userInput');
+ta.addEventListener('input', function(){
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+});
+
+function handleKey(e){
+    if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); send(); }
+}
+
+/* ====== 东坡妙语轮换 ====== */
+const trivias = [
+    { text: '"竹杖芒鞋轻胜马，谁怕？一蓑烟雨任平生。"', attr: '—— 苏轼《定风波》' },
+    { text: '"但愿人长久，千里共婵娟。"', attr: '—— 苏轼《水调歌头》' },
+    { text: '"大江东去，浪淘尽，千古风流人物。"', attr: '—— 苏轼《念奴娇·赤壁怀古》' },
+    { text: '"人生如逆旅，我亦是行人。"', attr: '—— 苏轼《临江仙》' },
+    { text: '"回首向来萧瑟处，归去，也无风雨也无晴。"', attr: '—— 苏轼《定风波》' },
+];
+let triviaIdx = 0;
+setInterval(()=>{
+    triviaIdx = (triviaIdx + 1) % trivias.length;
+    const el1 = document.getElementById('triviaText');
+    const el2 = document.getElementById('triviaAttr');
+    el1.style.opacity = 0; el2.style.opacity = 0;
+    setTimeout(()=>{
+        el1.textContent = trivias[triviaIdx].text;
+        el2.textContent = trivias[triviaIdx].attr;
+        el1.style.opacity = 1; el2.style.opacity = 1;
+    }, 400);
+}, 8000);
+document.getElementById('triviaText').style.transition = 'opacity .4s';
+document.getElementById('triviaAttr').style.transition = 'opacity .4s';
+
+/* ====== 消息系统 ====== */
+let busy = false;
+const chatBox = document.getElementById('chatMessages');
+
+function addMsg(role, html, skipAnim){
+    const d = document.createElement('div');
+    d.className = 'msg ' + role;
+    const av = role === 'bot' ? '蘇' : '我';
+    d.innerHTML = `<div class="av">${av}</div><div class="bubble">${html}</div>`;
+    if(skipAnim) d.style.animation = 'none';
+    chatBox.appendChild(d);
+    scr();
+}
+
+function scr(){
+    setTimeout(()=>{ chatBox.scrollTop = chatBox.scrollHeight; }, 50);
+}
+
+function askQ(el){
+    const text = el.querySelector('.si-text').textContent;
+    ta.value = text;
+    send();
+}
+
+function sendDirect(text){
+    ta.value = text;
+    send();
+}
+
+function send(){
+    if(busy) return;
+    const text = ta.value.trim();
+    if(!text) return;
+    addMsg('user', escapeHtml(text));
+    ta.value = ''; ta.style.height = 'auto';
+    genReply(text);
+}
+
+function escapeHtml(s){
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ====== 知识库 ====== */
+const KB = [
+{k:['词眼','狂','统领','基调','老夫聊发','少年狂','妙在','深意'],
+a:`<strong>"狂"——全词词眼</strong><br><br>"狂"字是整首词的灵魂与核心，具有统领全篇的作用。<br><br><strong>一、奠定基调</strong><br>开篇"老夫聊发少年狂"，一个"狂"字便奠定了全词<strong>豪放激昂</strong>的感情基调，使全词从首句起便气势非凡。<br><br><strong>二、贯穿上下阙</strong><br>上阙写 <span class="tag g">狂态</span> —— 左牵黄、右擎苍、千骑卷平冈、亲射虎看孙郎，尽是出猎之豪迈不羁；<br>下阙写 <span class="tag b">狂志</span> —— 酒酣胸胆开张、持节云中、会挽雕弓射天狼，皆为报国之壮志豪情。<br><br><strong>三、人格力量</strong><br>苏轼时年四十，因反对新法被外调，远离权力中心，却以"少年狂"自许——不服老、不消沉、不妥协。<br><br><span class="hl">"老夫聊发少年狂" —— 年华可以老去，但壮志永远年轻。</span>`},
+
+{k:['天狼','射天狼','西北','敌人','西夏','保家卫国','家国','爱国','含义','作用'],
+a:`<strong>"射天狼"——全词最高潮</strong><br><br><span class="tag g">天狼</span> 即天狼星，古代星象学认为天狼星主侵掠之事，此处借代<strong>西北边境的敌人</strong>（当时宋朝面临的西夏威胁）。<br><br><span class="hl">"会挽雕弓如满月，西北望，射天狼。"</span><br><br><strong>其作用体现在四个方面：</strong><br><br>① <span class="tag r">全词主旨</span> —— 将个人出猎之豪迈升华为保家卫国的宏愿，是全词的思想巅峰。<br><br>② <span class="tag b">比喻精妙</span> —— "雕弓如满月"以满月喻弓，既壮美又充满力量感，塑造了挽弓待发的英武形象。<br><br>③ <span class="tag g">借代手法</span> —— "天狼"代指入侵之敌，表达含蓄有力。<br><br>④ <span class="tag b">层层递进</span> —— 全词从 出猎→言志→报国，至此达到最强音。`},
+
+{k:['典故','用典','孙权','冯唐','魏尚','孙郎','持节','云中','历史'],
+a:`<strong>两大经典用典</strong><br><br><strong>典故一：孙权射虎（上阙）</strong><br><span class="hl">"为报倾城随太守，亲射虎，看孙郎。"</span><br><span class="tag r">孙郎</span> 即孙权。据《三国志》记载，孙权曾在南京亲自射虎，座骑被虎抓伤仍从容应对。苏轼以三国英雄孙权自喻，表现出身为文官却不减英武的<strong>豪迈气概</strong>。全城百姓追随出猎，既写人心所向，又以英雄自许。<br><br><strong>典故二：冯唐持节赦魏尚（下阙）</strong><br><span class="hl">"持节云中，何日遣冯唐？"</span><br>汉文帝时，<span class="tag b">魏尚</span> 守边有功却因小过获罪削职。<span class="tag g">冯唐</span> 上书为其辩护，文帝遂派冯唐持符节赦免并重新起用魏尚。苏轼以魏尚自喻——一位有功却被冷落的边将。"何日"二字满含期待，表达了渴望被朝廷重新信任、委以重任的迫切心情。<br><br><span class="tag g">以古喻今</span> <span class="tag b">言近旨远</span> <span class="tag r">含蓄深沉</span>`},
+
+{k:['挫折','贬谪','乌台','诗案','黄州','惠州','儋州','面对','旷达','逆境','坎坷'],
+a:`<strong>苏轼一生的重大挫折</strong><br><br><span class="tag r">乌台诗案（1079年）</span><br>因诗文被政敌断章取义诬为讽刺新法，苏轼被逮捕入狱<strong>130天</strong>，几近丧命。出狱后贬为黄州团练副使。<br><br><span class="tag b">贬谪黄州（1080–1084年）</span><br>在黄州失去俸禄，物质匮乏。但他于东坡耕种，自号"东坡居士"，写下《赤壁赋》《念奴娇·赤壁怀古》等不朽名作。<br><span class="hl">苦难成就了更深邃的哲理——"大江东去，浪淘尽，千古风流人物。"</span><br><br><span class="tag g">再贬惠州（1094年）</span><br>新党再度执政，苏轼被贬广东惠州。他依然乐观，写出"日啖荔枝三百颗，不辞长作岭南人"。<br><br><span class="tag b">远贬儋州（1097年）</span><br>六十岁被贬海南儋州——几乎等同于流放。但他在蛮荒之地办学堂、行医济民、著书立说。<br><span class="hl">"九死南荒吾不恨，兹游奇绝冠平生。"</span><br><br><strong>面对方式：</strong>以 <span class="tag g">儒家入世</span> <span class="tag b">道家逍遥</span> <span class="tag r">佛家随缘</span> 三教融通，在反复打击中始终保持旷达乐观。`},
+
+{k:['豪放','开山','开创','词派','词风','艳科','花间','婉约','革新','苏辛','特点'],
+a:`<strong>苏轼的豪放词风</strong><br><br>《江城子·密州出猎》被誉为"豪放词的开山之作"，原因如下：<br><br><span class="tag r">打破传统</span> 在苏轼之前，词坛长期被花间派主导，内容多为男欢女爱、伤春悲秋，词被视为"小道""艳科"。苏轼以这首词彻底打破了这一局面。<br><br><span class="tag b">题材拓展</span> 以出猎为题——壮阔的围猎场面、英武的太守形象、保家卫国的壮志——这些内容在此前的词作中从未出现。<br><br><span class="tag g">风格变革</span> 全词气势磅礴、慷慨激昂。苏轼自己说：<br><span class="hl">"令东州壮士抵掌顿足而歌之，吹笛击鼓以为节，颇壮观也。"</span><br><br><span class="tag b">以诗入词</span> 将诗的表现手法——用典、议论、叙事——引入词中，使词的文学品格全面提升。<br><br><span class="tag r">后世影响</span> 辛弃疾继承发展，将豪放词推向新高度。二人并称 <strong>"苏辛"</strong>，共同代表豪放词派的最高成就。`},
+
+{k:['文学成就','成就','贡献','全才','散文','书法','唐宋八大家','宋四家','绘画'],
+a:`<strong>苏轼——旷世全才</strong><br><br><span class="tag r">词</span> 开创豪放词派，与辛弃疾并称"苏辛"。代表：《江城子·密州出猎》《念奴娇·赤壁怀古》《水调歌头》《定风波》《江城子·记梦》。<br><br><span class="tag b">诗</span> 与黄庭坚并称"苏黄"，为宋诗代表。善于将哲理融入景物，代表：《题西林壁》《饮湖上初晴后雨》。<br><br><span class="tag g">散文</span> 位列唐宋八大家，与欧阳修并称"欧苏"。前后《赤壁赋》是中国散文巅峰，《记承天寺夜游》仅八十余字却意境深远。<br><br><span class="tag b">书法</span> 位列宋四家之首（苏黄米蔡）。《黄州寒食帖》被誉为"天下第三行书"。<br><br><span class="tag r">绘画</span> 提倡文人画，提出"论画以形似，见与儿童邻"，擅画墨竹、枯木怪石。<br><br><span class="hl">苏轼之伟大，不仅在于每个领域都达极高水平，更在于以旷达态度将所有才华融为一体，形成独一无二的"东坡精神"。</span>`},
+
+{k:['背景','创作','密州','知州','熙宁','1075','写作','为什么写'],
+a:`<strong>《江城子·密州出猎》创作背景</strong><br><br><span class="tag r">时间</span> 宋神宗熙宁八年（1075年）十月<br><span class="tag b">地点</span> 密州（今山东诸城）常山<br><span class="tag g">作者状态</span> 时年四十岁，任密州知州<br><br><strong>政治背景：</strong><br>苏轼因反对王安石变法中的激进措施而自请外调，先后任杭州通判、密州知州。虽然远离权力中心，但内心仍然怀有强烈的报国壮志。<br><br><strong>创作契机：</strong><br>熙宁八年十月，苏轼率众在密州常山出猎。壮阔的围猎场面深深激荡了他平日蕴积的豪情壮志，当晚便写下这首千古名篇。<br><br><span class="hl">"近却颇作小词，虽无柳七郎风味，亦自是一家。数日前猎于郊外，所获猎物多……令东州壮士抵掌顿足而歌之，吹笛击鼓以为节，颇壮观也。"<br>—— 致鲜于子骏书</span>`},
+
+{k:['上阙','上片','出猎','千骑','锦帽','貂裘','场面'],
+a:`<strong>上阙解析：出猎之壮</strong><br><br><span class="hl">"老夫聊发少年狂，左牵黄，右擎苍。锦帽貂裘，千骑卷平冈。为报倾城随太守，亲射虎，看孙郎。"</span><br><br>上阙以叙事为主，铺叙出猎的壮阔场面：<br><br>• <span class="tag r">"狂"</span> 词眼，统领全词，奠定豪放基调<br>• <span class="tag b">"左牵黄，右擎苍"</span> 对偶工整，飒爽英姿跃然纸上<br>• <span class="tag g">"千骑卷平冈"</span> "卷"字化静为动，写出千骑奔驰、气势如虹之壮阔<br>• <span class="tag b">"亲射虎，看孙郎"</span> 以孙权自比，上阙最高潮<br><br>全城百姓追随太守出猎，既写苏轼深得民心，又写他以英雄自许的豪气。`},
+
+{k:['下阙','下片','酒酣','鬓微霜','何妨','言志','抒情','壮志','雕弓'],
+a:`<strong>下阙解析：壮志之烈 → 家国之大</strong><br><br><span class="hl">"酒酣胸胆尚开张。鬓微霜，又何妨！持节云中，何日遣冯唐？会挽雕弓如满月，西北望，射天狼。"</span><br><br>下阙转入抒情言志，层层递进：<br><br>• <span class="tag g">"酒酣胸胆尚开张"</span> 酒后更见真性情，胸怀壮志、胆气豪壮<br>• <span class="tag r">"又何妨！"</span> 对岁月流逝的藐视，三个字铿锵有力<br>• <span class="tag b">"持节云中"</span> 以魏尚自喻，渴望被朝廷重新起用<br>• <span class="tag g">"射天狼"</span> 全词最高潮，从个人出猎升华到保家卫国<br><br><strong>情感层次：</strong><br><span class="tag g">壮心不已</span>（又何妨）→ <span class="tag b">渴望重用</span>（遣冯唐）→ <span class="tag r">报国壮志</span>（射天狼）`},
+
+{k:['修辞','手法','比喻','夸张','对偶','对比','炼字','艺术','表现'],
+a:`<strong>主要修辞与艺术手法</strong><br><br><span class="tag r">对比</span> "老夫" vs "少年狂"——以年老反衬豪情；"鬓微霜" vs "胸胆开张"——外表与内心形成张力<br><br><span class="tag b">对偶</span> "左牵黄，右擎苍"——工整对仗，飒爽英姿<br><br><span class="tag g">夸张</span> "千骑卷平冈"渲染声势；"倾城随太守"极写人心所向<br><br><span class="tag b">比喻</span> "雕弓如满月"——以满月喻拉满的弓，壮美有力<br><br><span class="tag r">用典</span> 孙权射虎、冯唐持节赦魏尚——以古喻今<br><br><span class="tag g">炼字</span> "卷"化静为动 · "狂"统领全篇 · "会"（终将）语气坚定<br><br><span class="tag b">借代</span> "天狼"代指入侵之敌；"黄""苍"代指猎犬与苍鹰<br><br><span class="tag r">反问</span> "又何妨！"——以问代答，气势更足`},
+
+{k:['翻译','白话','意思','译文','全文'],
+a:`<strong>《江城子·密州出猎》全文译文</strong><br><br><span class="tag r">上阙</span><br>"老夫聊发少年狂，左牵黄，右擎苍。"<br>→ 我姑且抒发少年人的豪情——左手牵着猎犬，右臂托着苍鹰。<br><br>"锦帽貂裘，千骑卷平冈。"<br>→ 头戴锦帽，身穿貂裘，率千余骑手席卷过平坦的山冈。<br><br>"为报倾城随太守，亲射虎，看孙郎。"<br>→ 为报答全城百姓追随出猎，我要像孙权一样亲自射杀猛虎！<br><br><span class="tag b">下阙</span><br>"酒酣胸胆尚开张。鬓微霜，又何妨！"<br>→ 畅饮后更觉胸怀壮阔。鬓角微白，那又有什么关系！<br><br>"持节云中，何日遣冯唐？"<br>→ 什么时候朝廷能像赦免魏尚那样重新起用我？<br><br>"会挽雕弓如满月，西北望，射天狼。"<br>→ 到那时我一定拉满雕弓如同圆月，望向西北，射下那天狼星！<br><br><span class="hl">全词由出猎之壮写起，逐步升华到报国建功的豪迈壮志，是苏轼豪放词的代表作。</span>`},
+
+{k:['三苏','苏洵','苏辙','父亲','弟弟','家庭','眉山','介绍'],
+a:`<strong>"三苏"——中国文学史上的奇迹</strong><br><br><span class="tag r">苏洵</span>（1009–1066）<br>苏轼之父，字明允，号老泉。二十七岁始发奋读书，大器晚成。以散文著称，位列唐宋八大家。著有《六国论》等名篇，他亲自教导苏轼兄弟，奠定了两人深厚的文学功底。<br><br><span class="tag b">苏轼</span>（1037–1101）<br>字子瞻，号东坡居士。三苏之中成就最高，诗词文书画无所不精，被誉为中国文化史上最伟大的文人之一。<br><br><span class="tag g">苏辙</span>（1039–1112）<br>苏轼之弟，字子由。同列唐宋八大家。性格沉稳内敛，与兄长苏轼一生手足情深。苏轼写给苏辙的"但愿人长久，千里共婵娟"成为千古名句。<br><br><span class="hl">父子三人并称"三苏"，同列"唐宋八大家"，这在中国文学史上是绝无仅有的盛事。</span><br><br>苏轼出生于四川眉山，这里山清水秀、文风昌盛。`},
+
+{k:['赤壁','念奴娇','大江东去','赤壁赋','讲了什么'],
+a:`<strong>苏轼与赤壁</strong><br><br>贬谪黄州期间（1080–1084年），苏轼多次游览黄州赤壁，写下了中国文学史上最伟大的几部作品：<br><br><span class="tag r">《念奴娇·赤壁怀古》</span><br><span class="hl">"大江东去，浪淘尽，千古风流人物。"</span><br>豪放词的巅峰之作，以周瑜的少年英武与自己的壮志未酬形成对照，千古传唱。<br><br><span class="tag b">《前赤壁赋》</span><br>以主客问答的形式探讨人生的有限与无限。"惟江上之清风，与山间之明月……取之无禁，用之不竭"，表达了超然物外的旷达哲思。<br><br><span class="tag g">《后赤壁赋》</span><br>冬日再游赤壁，增添了孤独与超脱的意味。<br><br>赤壁时期是苏轼文学创作的 <span class="tag b">巅峰期</span>，也是他思想境界的飞跃期。正所谓：苦难淬炼灵魂，成就不朽。`},
+
+{k:['水调歌头','明月','几时有','中秋','思念','内容'],
+a:`<strong>《水调歌头·明月几时有》</strong><br><br>写于熙宁九年（1076年）中秋，苏轼在密州任上，与弟弟苏辙已分别七年。此词被誉为 <span class="tag b">"中秋词之冠"</span>。<br><br><span class="hl">"明月几时有？把酒问青天。不知天上宫阙，今夕是何年。"</span><br><br>上阙幻想飞入月宫，但最终选择留在人间——"起舞弄清影，何似在人间"。苏轼在出世与入世之间做出了选择。<br><br><span class="hl">"明月几时有？把酒问青天。不知天上宫阙，今夕是何年。"</span><br><br>上阙幻想飞入月宫，最终选择留在人间——"起舞弄清影，何似在人间"。<br><br>下阙由月之阴晴圆缺联想人生悲欢离合，以千古名句收束：<br><br><span class="hl">"但愿人长久，千里共婵娟。"</span><br><br>被誉为 <span class="tag b">"中秋词之冠"</span>，不仅是对弟弟的思念，更是对人生离合的哲理升华——以旷达胸怀化解思念之苦。`},
+
+{k:['定风波','一蓑烟雨','竹杖芒鞋','也无风雨也无晴'],
+a:`<strong>《定风波》</strong><br><br>黄州时期，出行遇雨，同行皆狼狈，唯苏轼从容不迫。<br><br><span class="hl">"莫听穿林打叶声，何妨吟啸且徐行。竹杖芒鞋轻胜马，谁怕？一蓑烟雨任平生。"</span><br><br><span class="hl">"回首向来萧瑟处，归去，也无风雨也无晴。"</span><br><br>苏轼旷达哲学的极致表达——超越顺逆，不以物喜，不以己悲。与《密州出猎》中 <span class="tag r">"又何妨"</span> 一脉相承。`},
+
+{k:['人格','精神','性格','品质','旷达','乐观','风貌'],
+a:`<strong>苏轼的人格风貌</strong><br><br><span class="tag r">老当益壮</span> "老夫聊发少年狂"——不服老、不消沉<br><br><span class="tag b">以英雄自许</span> 以孙权自比，虽为文官却有将帅之志<br><br><span class="tag g">藐视困境</span> "鬓微霜，又何妨！"——对命运的蔑视<br><br><span class="tag b">心系家国</span> "西北望，射天狼"——将个人失意升华为家国担当<br><br><span class="tag r">旷达超然</span> "又何妨"延续为"一蓑烟雨任平生""也无风雨也无晴"<br><br><span class="hl">苏轼的伟大在于：越是遭受打击，越是展现出旷达超然的精神力量。</span>`},
+
+{k:['东坡','东坡居士','号','为什么叫','由来'],
+a:`<strong>"东坡居士"的由来</strong><br><br>苏轼在乌台诗案后被贬至黄州（今湖北黄冈），担任有名无实的"黄州团练副使"。<br><br>在黄州期间，苏轼失去了正式俸禄，生活困窘。友人帮他在城东一片荒废的坡地上开垦耕种，苏轼由此自号 <span class="tag g">"东坡居士"</span>。<br><br>"东坡"之名，既取自他耕种的那片东坡之地，也暗含对白居易的致敬——白居易在忠州时也曾有"东坡"之地。<br><br><span class="hl">从此，"苏东坡"这个名字比"苏轼"更加深入人心，成为中国文化史上最亲切、最富有人格魅力的称呼之一。</span>`},
+
+{k:['江城子','密州出猎','原文','全词','全文'],
+a:`<strong>《江城子·密州出猎》全文</strong><br><br><span class="hl">老夫聊发少年狂，左牵黄，右擎苍，锦帽貂裘，千骑卷平冈。为报倾城随太守，亲射虎，看孙郎。</span><br><br><span class="hl">酒酣胸胆尚开张。鬓微霜，又何妨！持节云中，何日遣冯唐？会挽雕弓如满月，西北望，射天狼。</span><br><br>此词作于宋神宗熙宁八年（1075年），是苏轼在密州任知州时所写。全词以出猎为题材，上阙写出猎之壮，下阙抒报国之志，是 <span class="tag r">豪放词的开山之作</span>，标志着词从"花间"小道走向广阔天地。`}
+];
+
+/* ====== 匹配引擎 ====== */
+function findAnswer(q){
+    let best=null, bs=0;
+    for(const item of KB){
+        let s=0;
+        for(const k of item.k) if(q.includes(k)) s+=k.length;
+        if(s>bs){bs=s; best=item;}
+    }
+    if(best && bs>=2) return best.a;
+
+    return `感谢你的提问！这是一个很好的问题。<br><br>基于本站知识库，以下方向可供你深入探索：<br><br><strong>关于词作：</strong><br><span class="tag r">词眼"狂"</span> <span class="tag b">两处用典</span> <span class="tag g">射天狼</span> 三层递进结构<br><br><strong>关于苏轼：</strong><br><span class="tag g">仕途沉浮</span> <span class="tag b">全面成就</span> <span class="tag r">旷达人生观</span><br><br><span class="hl">你可以尝试提问以上具体话题，我将为你详细解答。</span><br><br>也推荐浏览本站的 <a href="analysis.html" style="color:var(--green);font-weight:500;">词作解析</a> 和 <a href="biography.html" style="color:var(--brown);font-weight:500;">苏轼生平</a> 页面。`;
+}
+
+/* ====== 逐字打印（流式效果） ====== */
+function typeWrite(el, html, spd, cb){
+    let i=0, isTag=false, buf='';
+    function go(){
+        if(i>=html.length){if(cb)cb();return;}
+        const ch=html[i];
+        if(ch==='<'){isTag=true;buf+=ch;i++;go();return;}
+        if(ch==='>'&&isTag){isTag=false;buf+=ch;el.innerHTML=buf;i++;scr();go();return;}
+        if(isTag){buf+=ch;i++;go();return;}
+        buf+=ch; el.innerHTML=buf; i++; scr();
+        setTimeout(go,spd);
+    }
+    go();
+}
+
+/* ====== 生成回复 ====== */
+function genReply(q){
+    busy=true;
+    document.getElementById('sendBtn').disabled=true;
+    const ti=document.getElementById('typingRow');
+    ti.classList.add('show'); scr();
+
+    const ans=findAnswer(q);
+    const delay=600+Math.random()*800;
+
+    setTimeout(()=>{
+        ti.classList.remove('show');
+        const d=document.createElement('div');
+        d.className='msg bot';
+        d.innerHTML=`<div class="av">蘇</div><div class="bubble" id="stream-target"></div>`;
+        chatBox.appendChild(d); scr();
+
+        typeWrite(document.getElementById('stream-target'), ans, 10, ()=>{
+            document.getElementById('stream-target').removeAttribute('id');
+            busy=false;
+            document.getElementById('sendBtn').disabled=false;
+        });
+    }, delay);
+}
+
+/* ====== 初始化欢迎消息 ====== */
+window.addEventListener('DOMContentLoaded', ()=>{
+    setTimeout(()=>{
+        addMsg('bot', '你好！我是<strong>东坡问答助手</strong>，关于苏轼的生平、词作、典故、文学成就都可以问我 😊<br><br>你可以直接输入问题，也可以点击右侧的 <span class="tag g">推荐问题</span> 快速开始。');
+    }, 300);
+});
+</script>
+</body>
+</html>
